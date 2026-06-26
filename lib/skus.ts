@@ -1,0 +1,156 @@
+export type SKU = {
+  id: string;
+  name: string;
+  shortName: string;
+  line: "Puffs" | "Bhujia" | "Bhel" | "Raisins" | "Combo";
+  size: "Mini" | "Regular";
+  price: 10 | 20;
+  emoji: string;
+  color: string; // tailwind bg color for card
+};
+
+export const SKUS: SKU[] = [
+  {
+    id: "sku-01",
+    name: "Flamin' Fun Puffs (Mini)",
+    shortName: "Flamin' Fun Mini",
+    line: "Puffs",
+    size: "Mini",
+    price: 10,
+    emoji: "🔥",
+    color: "bg-orange-500",
+  },
+  {
+    id: "sku-02",
+    name: "Flamin' Fun Puffs (Regular)",
+    shortName: "Flamin' Fun Regular",
+    line: "Puffs",
+    size: "Regular",
+    price: 20,
+    emoji: "🔥",
+    color: "bg-orange-600",
+  },
+  {
+    id: "sku-03",
+    name: "Chaat Corner Puffs (Mini)",
+    shortName: "Chaat Corner Mini",
+    line: "Puffs",
+    size: "Mini",
+    price: 10,
+    emoji: "🌿",
+    color: "bg-green-500",
+  },
+  {
+    id: "sku-04",
+    name: "Chaat Corner Puffs (Regular)",
+    shortName: "Chaat Corner Regular",
+    line: "Puffs",
+    size: "Regular",
+    price: 20,
+    emoji: "🌿",
+    color: "bg-green-600",
+  },
+  {
+    id: "sku-05",
+    name: "Pizza Party Puffs (Mini)",
+    shortName: "Pizza Party Mini",
+    line: "Puffs",
+    size: "Mini",
+    price: 10,
+    emoji: "🍕",
+    color: "bg-red-500",
+  },
+  {
+    id: "sku-06",
+    name: "Pizza Party Puffs (Regular)",
+    shortName: "Pizza Party Regular",
+    line: "Puffs",
+    size: "Regular",
+    price: 20,
+    emoji: "🍕",
+    color: "bg-red-600",
+  },
+  {
+    id: "sku-07",
+    name: "Mighty Masala Jowar Puffs (Mini)",
+    shortName: "Mighty Masala Mini",
+    line: "Puffs",
+    size: "Mini",
+    price: 10,
+    emoji: "💥",
+    color: "bg-yellow-500",
+  },
+  {
+    id: "sku-08",
+    name: "Mighty Masala Jowar Puffs (Regular)",
+    shortName: "Mighty Masala Regular",
+    line: "Puffs",
+    size: "Regular",
+    price: 20,
+    emoji: "💥",
+    color: "bg-yellow-600",
+  },
+  {
+    id: "sku-09",
+    name: "Millet Bhujia Classic (Mini)",
+    shortName: "Bhujia Classic Mini",
+    line: "Bhujia",
+    size: "Mini",
+    price: 10,
+    emoji: "🌾",
+    color: "bg-amber-500",
+  },
+  {
+    id: "sku-10",
+    name: "Millet Bhujia Classic (Regular)",
+    shortName: "Bhujia Classic Regular",
+    line: "Bhujia",
+    size: "Regular",
+    price: 20,
+    emoji: "🌾",
+    color: "bg-amber-600",
+  },
+  {
+    id: "sku-11",
+    name: "Millet Bhel",
+    shortName: "Millet Bhel",
+    line: "Bhel",
+    size: "Regular",
+    price: 20,
+    emoji: "🥗",
+    color: "bg-lime-500",
+  },
+  {
+    id: "sku-12",
+    name: "Nardana Raisins",
+    shortName: "Nardana Raisins",
+    line: "Raisins",
+    size: "Regular",
+    price: 20,
+    emoji: "🍇",
+    color: "bg-purple-500",
+  },
+  {
+    id: "sku-13",
+    name: "Tangy Raisins (Mini)",
+    shortName: "Tangy Raisins Mini",
+    line: "Raisins",
+    size: "Mini",
+    price: 10,
+    emoji: "✨",
+    color: "bg-pink-500",
+  },
+  {
+    id: "sku-14",
+    name: "Mad Variety Mini Pack",
+    shortName: "Mad Variety Pack",
+    line: "Combo",
+    size: "Regular",
+    price: 20,
+    emoji: "🎉",
+    color: "bg-indigo-500",
+  },
+];
+
+export const getSKU = (id: string): SKU | undefined =>
+  SKUS.find((s) => s.id === id);

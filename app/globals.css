@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/* ── MadMix brand tokens ── */
+:root {
+  --mad-red: #E63012;
+  --mad-orange: #F97316;
+  --mad-yellow: #FBBF24;
+  --mad-purple: #7C3AED;
+  --mad-bg: #FAFAF8;
+  --mad-card: #FFFFFF;
+  --mad-text: #1A1A1A;
+  --mad-muted: #6B7280;
+  --mad-border: #E5E7EB;
+
+  --background: var(--mad-bg);
+  --foreground: var(--mad-text);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--mad-bg);
+  color: var(--mad-text);
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Prevent body scroll when modal open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Points pop animation */
+@keyframes points-pop {
+  0%   { transform: scale(0.5) translateY(0);   opacity: 0; }
+  40%  { transform: scale(1.3) translateY(-20px); opacity: 1; }
+  70%  { transform: scale(1.0) translateY(-30px); opacity: 1; }
+  100% { transform: scale(0.9) translateY(-50px); opacity: 0; }
+}
+
+.animate-points-pop {
+  animation: points-pop 1.4s ease forwards;
+}
+
+/* Tier badge glow */
+@keyframes tier-glow {
+  0%, 100% { box-shadow: 0 0 6px 2px rgba(124,58,237,0.3); }
+  50%       { box-shadow: 0 0 14px 6px rgba(124,58,237,0.6); }
+}
+
+.animate-tier-glow {
+  animation: tier-glow 2s ease-in-out infinite;
+}
+
+/* Fade in up */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease forwards;
+}
+
+/* Bottom nav safe area */
+.pb-nav {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
