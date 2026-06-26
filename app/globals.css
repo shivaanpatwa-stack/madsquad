@@ -120,3 +120,28 @@ body.modal-open {
 .pb-nav {
   padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
 }
+
+/* ── Desktop phone frame (seller views) ── */
+@media (min-width: 768px) {
+  body.seller-view {
+    background: linear-gradient(135deg, #FFF3E6 0%, #EDE0D0 100%);
+    min-height: 100vh;
+  }
+
+  .seller-shell {
+    max-width: 430px;
+    margin: 0 auto;
+    background: #FFF8F0;
+    box-shadow:
+      0 0 0 1px #F0E6D8,
+      0 25px 60px rgba(26, 18, 0, 0.14),
+      -4px 0 20px rgba(26, 18, 0, 0.04),
+      4px 0 20px rgba(26, 18, 0, 0.04);
+    position: relative;
+  }
+}
+
+/* ── HQ desktop uses full width ── */
+body.hq-view {
+  background: #FFF8F0;
+}

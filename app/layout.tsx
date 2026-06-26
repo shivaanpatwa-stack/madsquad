@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppProvider } from "@/store/AppContext";
 import BottomNav from "@/components/layout/BottomNav";
-import SideNav from "@/components/layout/SideNav";
+import PhoneFrame from "@/components/layout/PhoneFrame";
 
 export const metadata: Metadata = {
   title: "MadSquad",
@@ -18,10 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AppProvider>
-          <SideNav />
-          <main className="md:ml-56 pb-nav md:pb-0">
+          <PhoneFrame>
             {children}
-          </main>
+          </PhoneFrame>
           <BottomNav />
         </AppProvider>
       </body>

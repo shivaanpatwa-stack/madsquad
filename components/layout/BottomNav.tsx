@@ -13,10 +13,13 @@ const NAV = [
 
 export default function BottomNav() {
   const path = usePathname();
+  const isHQ = path.startsWith("/hq");
 
   return (
+    // Seller pages: show on all screen sizes (phone frame on desktop aligns with it)
+    // HQ page: hide on desktop only (sidebar handles nav), keep on mobile
     <nav
-      className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-white"
+      className={`${isHQ ? "md:hidden" : ""} fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-white`}
       style={{
         borderTop: "1px solid #F0E6D8",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
@@ -25,7 +28,7 @@ export default function BottomNav() {
     >
       <div className="flex items-center justify-around h-16">
         {NAV.map(({ href, label, Icon }) => {
-          const active = path === href;
+          const active = path === href || (href === "/hq" && isHQ);
           return (
             <Link
               key={href}
