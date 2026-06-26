@@ -2,15 +2,44 @@
 
 /* ── MadMix brand tokens ── */
 :root {
-  --mad-red: #E63012;
-  --mad-orange: #F97316;
-  --mad-yellow: #FBBF24;
-  --mad-purple: #7C3AED;
-  --mad-bg: #FAFAF8;
-  --mad-card: #FFFFFF;
-  --mad-text: #1A1A1A;
-  --mad-muted: #6B7280;
-  --mad-border: #E5E7EB;
+  /* Primary — MadMix signature orange, exact from eatmadmix.com meta theme-color */
+  --mad-primary:       #FF6900;
+  --mad-prik:          #E55A00;
+  --mad-primary-light: #FF8C3A;
+
+  /* Secondary — warm yellow from packaging */
+  --mad-yellow:        #FFB800;
+  --mad-yellow-light:  #FFD966;
+
+  /* Accent — deep red used in product labels */
+  --mad-red:           #D62828;
+
+  /* Dark — near-black for bold headings on eatmadmix.com */
+  --mad-black:         #1A1200;
+
+  /* Backgrounds — cream/off-white */
+  --mad-bg:            #FFF8F0;
+  --mad-card:          #FFFFFF;
+  --mad-card-warm:     #FFF3E6;
+
+  /* Text */
+  --mad-text:          #1A1200;
+  --mad-text-muted:    #6B5B45;
+  --mad-text-light:    #9C8870;
+
+  /* Border */
+  --mad-border:        #F0E6D8;
+
+  /* Tier colors */
+  --tier-nibbler:      #9CA3AF;
+  --tier-muncher:      #FF6900;
+  --tier-crusher:      #D62828;
+  --tier-legend:       #7C3AED;
+
+  /* HQ dashboard (dark admin) */
+  --hq-bg:             #1A1200;
+  --hq-surface:        #2D1F00;
+  --hq-border:         #3D2B00;
 
   --background: var(--mad-bg);
   --foreground: var(--mad-text);
@@ -28,42 +57,64 @@ body {
   position: relative;
 }
 
-/* Prevent body scroll when modal open */
 body.modal-open {
   overflow: hidden;
 }
 
 /* Points pop animation */
 @keyframes points-pop {
-  0%   { transform: scale(0.5) translateY(0);   opacity: 0; }
+  0%   { transform: scale(0.5) translateY(0);    opacity: 0; }
   40%  { transform: scale(1.3) translateY(-20px); opacity: 1; }
   70%  { transform: scale(1.0) translateY(-30px); opacity: 1; }
   100% { transform: scale(0.9) translateY(-50px); opacity: 0; }
 }
+.animate-points-pop { animation: points-pop 1.4s ease forwards; }
 
-.animate-points-pop {
-  animation: points-pop 1.4s ease forwards;
-}
-
-/* Tier badge glow */
+/* Tier badge glow (Mad Legend) */
 @keyframes tier-glow {
   0%, 100% { box-shadow: 0 0 6px 2px rgba(124,58,237,0.3); }
   50%       { box-shadow: 0 0 14px 6px rgba(124,58,237,0.6); }
 }
-
-.animate-tier-glow {
-  animation: tier-glow 2s ease-in-out infinite;
-}
+.animate-tier-glow { animation: tier-glow 2s ease-in-out infinite; }
 
 /* Fade in up */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+.animate-fade-in-up { animation: fade-in-up 0.35s ease forwards; }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.35s ease forwards;
+/* Streak fire pulse */
+@keyframes streak-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.3); }
 }
+.animate-streak-pulse { animation: streak-pulse 3s ease-in-out infinite; }
+
+/* Bar chart grow from bottom */
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* Tier upgrade full-screen flash */
+@keyframes tier-flash {
+  0%   { opacity: 0; transform: scale(0.85); }
+  20%  { opacity: 1; transform: scale(1.05); }
+  80%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+.animate-tier-flash { animation: tier-flash 1.5s ease forwards; }
+
+/* Channel card stagger fade-in-up */
+@keyframes chan-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chan-0 { animation: chan-up 0.4s ease 0ms   both; }
+.chan-1 { animation: chan-up 0.4s ease 50ms  both; }
+.chan-2 { animation: chan-up 0.4s ease 100ms both; }
+.chan-3 { animation: chan-up 0.4s ease 150ms both; }
 
 /* Bottom nav safe area */
 .pb-nav {

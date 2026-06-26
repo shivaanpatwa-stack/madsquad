@@ -14,7 +14,8 @@ export default function PointsPill({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full bg-yellow-400 text-yellow-900 font-semibold ${sizeClass}`}
+      className={`inline-flex items-center rounded-full font-semibold ${sizeClass}`}
+      style={{ background: "#FFB800", color: "#1A1200" }}
     >
       <Zap size={size === "lg" ? 18 : 13} fill="currentColor" />
       {points.toLocaleString("en-IN")} pts

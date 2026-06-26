@@ -18,6 +18,7 @@ export type Seller = {
   points: number;
   avatar: string; // initials fallback
   isCurrentUser?: boolean;
+  isNewSeller?: boolean; // true for sellers who haven't made their first sale
 };
 
 export const SELLERS: Seller[] = [
@@ -109,6 +110,18 @@ export const SELLERS: Seller[] = [
     tier: "Crusher",
     points: 1470,
     avatar: "RD",
+  },
+  {
+    id: "seller-09",
+    name: "Arjun Kapoor",
+    shortName: "Arjun",
+    partnerType: "Home-based seller",
+    area: "Andheri",
+    pincode: "400053",
+    tier: "Nibbler",
+    points: 0,
+    avatar: "AK",
+    isNewSeller: true,
   },
 ];
 
