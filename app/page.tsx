@@ -10,7 +10,7 @@ import AskAIModal from "@/components/ui/AskAIModal";
 import Link from "next/link";
 import {
   Zap, ArrowRight, Shield, MessageCircle,
-  CheckCircle, MapPin, Brain, Gift,
+  CheckCircle, MapPin, Brain, Gift, GraduationCap,
 } from "lucide-react";
 
 const TODAY = new Date("2026-06-27");
@@ -222,22 +222,23 @@ function JourneyBar({ totalUnits }: { totalUnits: number }) {
 }
 
 // ── Quick nav ─────────────────────────────────────────────────────────────────
-function QuickNav({ onAskAI }: { onAskAI: () => void }) {
+function QuickNav() {
   const NAV = [
-    { href: "/mentor",    Icon: Brain,        label: "Mentor",   bg: "#EDE9FE", color: "#7C3AED" },
-    { href: "/rewards",   Icon: Gift,         label: "Rewards",  bg: "#FFF3E6", color: "#FF6900" },
-    { href: "/territory", Icon: MapPin,       label: "Territory",bg: "#DCFCE7", color: "#16A34A" },
+    { href: "/academy",   Icon: GraduationCap, label: "Academy",   bg: "#FFF3E6", color: "#FF6900" },
+    { href: "/mentor",    Icon: Brain,         label: "Mentor",    bg: "#EDE9FE", color: "#7C3AED" },
+    { href: "/rewards",   Icon: Gift,          label: "Rewards",   bg: "#F0FDF4", color: "#16A34A" },
+    { href: "/territory", Icon: MapPin,        label: "Territory", bg: "#EFF6FF", color: "#2563EB" },
   ];
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-4 gap-2">
       {NAV.map(({ href, Icon, label, bg, color }) => (
         <Link key={href} href={href}
           className="flex flex-col items-center gap-2 py-4 rounded-2xl transition-all active:scale-95"
           style={{ background: "white", border: "1px solid #F0E6D8" }}>
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: bg }}>
-            <Icon size={18} style={{ color }} />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: bg }}>
+            <Icon size={16} style={{ color }} />
           </div>
-          <p className="text-xs font-bold" style={{ color: "#1A1200" }}>{label}</p>
+          <p className="text-[11px] font-bold" style={{ color: "#1A1200" }}>{label}</p>
         </Link>
       ))}
     </div>
@@ -357,7 +358,7 @@ export default function HomePage() {
           <JourneyBar totalUnits={totalUnits} />
 
           {/* 7 — Quick nav */}
-          <QuickNav onAskAI={() => setAiOpen(true)} />
+          <QuickNav />
 
           {/* 8 — AI mentor card */}
           <button

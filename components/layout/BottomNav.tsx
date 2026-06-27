@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PlusCircle, Brain, Gift, MapPin } from "lucide-react";
+import { Home, PlusCircle, Brain, MapPin, GraduationCap } from "lucide-react";
 
 const NAV = [
-  { href: "/",          label: "Home",     Icon: Home       },
-  { href: "/log-sale",  label: "Log Sale", Icon: PlusCircle },
-  { href: "/mentor",    label: "Mentor",   Icon: Brain      },
-  { href: "/rewards",   label: "Rewards",  Icon: Gift       },
-  { href: "/territory", label: "My Zone",  Icon: MapPin     },
+  { href: "/",          label: "Home",     Icon: Home          },
+  { href: "/log-sale",  label: "Log Sale", Icon: PlusCircle    },
+  { href: "/academy",   label: "Academy",  Icon: GraduationCap },
+  { href: "/mentor",    label: "Mentor",   Icon: Brain         },
+  { href: "/territory", label: "My Zone",  Icon: MapPin        },
 ];
 
 export default function BottomNav() {
@@ -31,11 +31,14 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-0.5 flex-1 py-2"
+              className="flex flex-col items-center gap-0.5 flex-1 py-2 relative"
               style={{ color: active ? "#FF6900" : "#9C8870" }}
             >
-              <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
+              <Icon size={21} strokeWidth={active ? 2.5 : 1.8} />
               <span className={`text-[10px] ${active ? "font-bold" : "font-medium"}`}>{label}</span>
+              {href === "/academy" && !active && (
+                <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full" style={{ background: "#FF6900" }} />
+              )}
             </Link>
           );
         })}

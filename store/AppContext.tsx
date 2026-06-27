@@ -26,10 +26,12 @@ export type AppState = {
   starterPackage: 100 | 500 | 1000;
   onboardingDetails: OnboardingDetails;
   generatedPlan: string | null;
+  // Academy
+  completedLessons: string[];
+  academyCertified: boolean;
 };
 
 const ARJUN = SELLERS.find((s) => s.isCurrentUser)!;
-// 520 pts = just entered Muncher tier. Includes First Win bonus + 5 days of activity.
 const BASE_POINTS = 520;
 
 const initialState: AppState = {
@@ -48,6 +50,8 @@ const initialState: AppState = {
     hoursPerWeek: "5-10",
   },
   generatedPlan: null,
+  completedLessons: [],
+  academyCertified: false,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -58,7 +62,11 @@ type Action =
   | { type: "REDEEM_REWARD"; rewardId: string; pointsCost: number }
   | { type: "CLEAR_LAST_SALE_POINTS" }
   | { type: "COMPLETE_ONBOARDING"; pkg: 100 | 500 | 1000; details: OnboardingDetails; plan: string | null }
-  | { type: "SKIP_TO_DEMO" };
+  | { type: "SKIP_TO_DEMO" }
+  | { type: "COMPLETE_LESSON"; lessonId: string; lessonPoints: number };
+
+const TOTAL_LESSONS = 5;
+const CERT_BONUS = 200;
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -99,6 +107,20 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "SKIP_TO_DEMO":
       return { ...state, onboardingComplete: true };
+    case "COMPLETE_LESSON": {
+      if (state.completedLessons.includes(action.lessonId)) return state;
+      const newCompleted = [...state.completedLessons, action.lessonId];
+      const justFinishedAll = newCompleted.length >= TOTAL_LESSONS;
+      const certBonus = justFinishedAll && !state.academyCertified ? CERT_BONUS : 0;
+      const newPoints = state.points + action.lessonPoints + certBonus;
+      return {
+        ...state,
+        completedLessons: newCompleted,
+        academyCertified: state.academyCertified || justFinishedAll,
+        points: newPoints,
+        seller: { ...state.seller, points: newPoints, tier: getTier(newPoints) },
+      };
+    }
     default:
       return state;
   }
@@ -114,6 +136,7 @@ const AppContext = createContext<{
   clearLastSalePoints: () => void;
   completeOnboarding: (pkg: 100 | 500 | 1000, details: OnboardingDetails, plan: string | null) => void;
   skipToDemo: () => void;
+  completeLesson: (lessonId: string, lessonPoints: number) => void;
 } | null>(null);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -142,8 +165,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "SKIP_TO_DEMO" });
   }, []);
 
+  const completeLesson = useCallback((lessonId: string, lessonPoints: number) => {
+    dispatch({ type: "COMPLETE_LESSON", lessonId, lessonPoints });
+  }, []);
+
   return (
-    <AppContext.Provider value={{ state, logSale, redeemReward, clearLastSalePoints, completeOnboarding, skipToDemo }}>
+    <AppContext.Provider value={{
+      state, logSale, redeemReward, clearLastSalePoints,
+      completeOnboarding, skipToDemo, completeLesson,
+    }}>
       {children}
     </AppContext.Provider>
   );

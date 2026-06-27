@@ -3,22 +3,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useApp } from "@/store/AppContext";
 import { TIER_CONFIG } from "@/lib/sellers";
-import { Home, PlusCircle, Brain, Gift, MapPin, BarChart2, MessageCircle } from "lucide-react";
+import { Home, PlusCircle, Brain, Gift, MapPin, BarChart2, MessageCircle, GraduationCap } from "lucide-react";
 import { useState } from "react";
 import AskAIModal from "@/components/ui/AskAIModal";
 
 const NAV = [
-  { href: "/",          label: "Home",      Icon: Home        },
-  { href: "/log-sale",  label: "Log Sale",  Icon: PlusCircle  },
-  { href: "/mentor",    label: "Mentor",    Icon: Brain       },
-  { href: "/rewards",   label: "Rewards",   Icon: Gift        },
-  { href: "/territory", label: "Territory", Icon: MapPin      },
+  { href: "/",          label: "Home",      Icon: Home           },
+  { href: "/log-sale",  label: "Log Sale",  Icon: PlusCircle     },
+  { href: "/academy",   label: "Academy",   Icon: GraduationCap  },
+  { href: "/mentor",    label: "Mentor",    Icon: Brain          },
+  { href: "/rewards",   label: "Rewards",   Icon: Gift           },
+  { href: "/territory", label: "Territory", Icon: MapPin         },
 ];
 
 export default function Sidebar() {
   const path = usePathname();
   const { state } = useApp();
-  const { seller, points } = state;
+  const { seller, points, academyCertified, completedLessons } = state;
   const tierCfg = TIER_CONFIG[seller.tier];
   const [aiOpen, setAiOpen] = useState(false);
 
@@ -46,6 +47,8 @@ export default function Sidebar() {
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV.map(({ href, label, Icon }) => {
             const active = path === href || (href !== "/" && path.startsWith(href));
+            const isAcademy = href === "/academy";
+            const lessonsDone = completedLessons.length;
             return (
               <Link
                 key={href}
@@ -57,7 +60,16 @@ export default function Sidebar() {
                 }}
               >
                 <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
-                <span className={`text-sm ${active ? "font-bold" : "font-medium"}`}>{label}</span>
+                <span className={`text-sm flex-1 ${active ? "font-bold" : "font-medium"}`}>{label}</span>
+                {isAcademy && !academyCertified && lessonsDone === 0 && (
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ background: "#FF6900", color: "white" }}>NEW</span>
+                )}
+                {isAcademy && !academyCertified && lessonsDone > 0 && (
+                  <span className="text-[9px] font-bold" style={{ color: "#9C8870" }}>{lessonsDone}/5</span>
+                )}
+                {isAcademy && academyCertified && (
+                  <span className="text-[9px] font-black" style={{ color: "#FFB800" }}>★ Done</span>
+                )}
               </Link>
             );
           })}
