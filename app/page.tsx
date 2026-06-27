@@ -10,7 +10,7 @@ import AskAIModal from "@/components/ui/AskAIModal";
 import Link from "next/link";
 import {
   Zap, ArrowRight, Shield, MessageCircle,
-  CheckCircle, MapPin, Brain, Gift, GraduationCap,
+  CheckCircle, MapPin, Brain, Gift, GraduationCap, Share2, TrendingUp,
 } from "lucide-react";
 
 const TODAY = new Date("2026-06-27");
@@ -226,8 +226,11 @@ function QuickNav() {
   const NAV = [
     { href: "/academy",   Icon: GraduationCap, label: "Academy",   bg: "#FFF3E6", color: "#FF6900" },
     { href: "/mentor",    Icon: Brain,         label: "Mentor",    bg: "#EDE9FE", color: "#7C3AED" },
-    { href: "/rewards",   Icon: Gift,          label: "Rewards",   bg: "#F0FDF4", color: "#16A34A" },
     { href: "/territory", Icon: MapPin,        label: "Territory", bg: "#EFF6FF", color: "#2563EB" },
+    { href: "/analytics", Icon: TrendingUp,    label: "My Stats",  bg: "#F0FDF4", color: "#16A34A" },
+    { href: "/rewards",   Icon: Gift,          label: "Rewards",   bg: "#FDF4FF", color: "#A855F7" },
+    { href: "/flyer",     Icon: Share2,        label: "Share",     bg: "#FFF8F0", color: "#FF6900" },
+    { href: "/buyback",   Icon: Shield,        label: "Buy-Back",  bg: "#FFF3E6", color: "#FF6900" },
   ];
   return (
     <div className="grid grid-cols-4 gap-2">

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useApp } from "@/store/AppContext";
 import { TIER_CONFIG } from "@/lib/sellers";
-import { Home, PlusCircle, Brain, Gift, MapPin, BarChart2, MessageCircle, GraduationCap } from "lucide-react";
+import { Home, PlusCircle, Brain, Gift, MapPin, BarChart2, MessageCircle, GraduationCap, Share2, Shield, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import AskAIModal from "@/components/ui/AskAIModal";
 
@@ -14,6 +14,9 @@ const NAV = [
   { href: "/mentor",    label: "Mentor",    Icon: Brain          },
   { href: "/rewards",   label: "Rewards",   Icon: Gift           },
   { href: "/territory", label: "Territory", Icon: MapPin         },
+  { href: "/analytics", label: "My Stats",  Icon: TrendingUp     },
+  { href: "/flyer",     label: "Share",     Icon: Share2         },
+  { href: "/buyback",   label: "Buy-Back",  Icon: Shield         },
 ];
 
 export default function Sidebar() {

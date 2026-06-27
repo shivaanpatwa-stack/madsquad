@@ -14,6 +14,14 @@ export type OnboardingDetails = {
   hoursPerWeek: string;
 };
 
+export type ReferralRecord = {
+  id: string;
+  name: string;
+  type: "buyer" | "seller";
+  timestamp: Date;
+  pointsEarned: number;
+};
+
 export type AppState = {
   seller: Seller;
   sales: SaleRecord[];
@@ -29,10 +37,21 @@ export type AppState = {
   // Academy
   completedLessons: string[];
   academyCertified: boolean;
+  // Referrals
+  referralCode: string;
+  referrals: ReferralRecord[];
+  // Buy-back
+  buyBackRequested: boolean;
 };
 
 const ARJUN = SELLERS.find((s) => s.isCurrentUser)!;
 const BASE_POINTS = 520;
+
+const SEED_REFERRALS: ReferralRecord[] = [
+  { id: "ref-1", name: "Priya Verma",  type: "buyer",  timestamp: new Date("2026-06-24T10:00:00"), pointsEarned: 25 },
+  { id: "ref-2", name: "Rohan Gupta",  type: "seller", timestamp: new Date("2026-06-25T14:30:00"), pointsEarned: 50 },
+  { id: "ref-3", name: "Meera Singh",  type: "buyer",  timestamp: new Date("2026-06-26T09:00:00"), pointsEarned: 25 },
+];
 
 const initialState: AppState = {
   seller: ARJUN,
@@ -52,6 +71,9 @@ const initialState: AppState = {
   generatedPlan: null,
   completedLessons: [],
   academyCertified: false,
+  referralCode: "ARJUN123",
+  referrals: SEED_REFERRALS,
+  buyBackRequested: false,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -63,7 +85,9 @@ type Action =
   | { type: "CLEAR_LAST_SALE_POINTS" }
   | { type: "COMPLETE_ONBOARDING"; pkg: 100 | 500 | 1000; details: OnboardingDetails; plan: string | null }
   | { type: "SKIP_TO_DEMO" }
-  | { type: "COMPLETE_LESSON"; lessonId: string; lessonPoints: number };
+  | { type: "COMPLETE_LESSON"; lessonId: string; lessonPoints: number }
+  | { type: "ADD_REFERRAL"; referral: ReferralRecord }
+  | { type: "REQUEST_BUY_BACK" };
 
 const TOTAL_LESSONS = 5;
 const CERT_BONUS = 200;
@@ -121,6 +145,18 @@ function reducer(state: AppState, action: Action): AppState {
         seller: { ...state.seller, points: newPoints, tier: getTier(newPoints) },
       };
     }
+    case "ADD_REFERRAL": {
+      if (state.referrals.find((r) => r.id === action.referral.id)) return state;
+      const newPoints = state.points + action.referral.pointsEarned;
+      return {
+        ...state,
+        referrals: [action.referral, ...state.referrals],
+        points: newPoints,
+        seller: { ...state.seller, points: newPoints, tier: getTier(newPoints) },
+      };
+    }
+    case "REQUEST_BUY_BACK":
+      return { ...state, buyBackRequested: true };
     default:
       return state;
   }
@@ -137,6 +173,8 @@ const AppContext = createContext<{
   completeOnboarding: (pkg: 100 | 500 | 1000, details: OnboardingDetails, plan: string | null) => void;
   skipToDemo: () => void;
   completeLesson: (lessonId: string, lessonPoints: number) => void;
+  addReferral: (referral: ReferralRecord) => void;
+  requestBuyBack: () => void;
 } | null>(null);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -169,10 +207,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "COMPLETE_LESSON", lessonId, lessonPoints });
   }, []);
 
+  const addReferral = useCallback((referral: ReferralRecord) => {
+    dispatch({ type: "ADD_REFERRAL", referral });
+  }, []);
+
+  const requestBuyBack = useCallback(() => {
+    dispatch({ type: "REQUEST_BUY_BACK" });
+  }, []);
+
   return (
     <AppContext.Provider value={{
       state, logSale, redeemReward, clearLastSalePoints,
       completeOnboarding, skipToDemo, completeLesson,
+      addReferral, requestBuyBack,
     }}>
       {children}
     </AppContext.Provider>
