@@ -34,7 +34,7 @@ export default function LogSalePage() {
     if (!selectedSku || !channel || !area) return;
     const sale: SaleRecord = {
       id: `sale-new-${Date.now()}`,
-      sellerId: "seller-01",
+      sellerId: state.seller.id,
       skuId: selectedSku,
       units,
       channel: channel as Channel,

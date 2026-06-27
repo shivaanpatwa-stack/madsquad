@@ -6,6 +6,7 @@ import { callMentor } from "@/lib/mentor";
 import { AREAS, CHANNELS } from "@/lib/sellers";
 import type { OnboardingDetails } from "@/store/AppContext";
 import { Shield, Target, TrendingUp, MapPin, Package, Clock, Mic, Zap, CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
+import { getVenuesForArea, getVenueListString, buildAreaFallbackPlan } from "@/lib/venues";
 
 type Screen = "welcome" | "package" | "details" | "plan" | "done";
 
@@ -26,23 +27,27 @@ WHAT_TO_STOCK: [which SKUs to prioritise and why]
 FIRST_MILESTONE: [what to hit, the reward, and an encouraging line]
 Be specific, confident, and supportive. Never generic. Use the numbers provided. Do not mention failure, quitting, or risk statistics — keep it positive and action-focused.`;
 
-const buildPlanPrompt = (pkg: number, details: OnboardingDetails) => `New seller details:
+const buildPlanPrompt = (pkg: number, details: OnboardingDetails) => {
+  const venueList = getVenueListString(details.area, details.channels);
+  return `New seller details:
 - Package: ₹${pkg} (~${pkg / 10} packs at ₹10 each)
 - Name: ${details.name}
 - Area: ${details.area}
 - Channels: ${details.channels.join(", ")}
 - Hours per week: ${details.hoursPerWeek}
-- Nearby demand signal: ${details.area} gyms move 18+ Flamin' Fun Puffs Mini per morning; corporate offices in ${details.area} prefer Bhujia Classic; college canteens love Chaat Corner Puffs
+- Verified venues in ${details.area} matched to their channels: ${venueList}
+- CRITICAL: Recommend ONLY venues from the list above — no generic placeholders
 - Seller coverage: Low saturation in ${details.area} — room to grow
 - First Win target: ${Math.round(pkg / 10 * 0.2)} packs (first milestone)
 - 7-day target: ${Math.round(pkg / 10)} packs
 
-Generate the plan now.`;
+Generate the plan now using the exact venue names listed above.`;
+};
 
-const FALLBACK_PLAN = `FIRST_MISSION: Gold's Gym, Andheri West — sell Flamin' Fun Puffs Mini (₹10) between 7–9 AM. Script: "Bhai, pre-workout snack try kar — MadMix ka naya puff hai, sirf dus rupaye!"
+const FALLBACK_PLAN = `FIRST_MISSION: Gold's Gym Andheri West — sell Flamin' Fun Puffs Mini (₹10) between 7–9 AM. Script: "Bhai, pre-workout snack try kar — MadMix ka naya puff hai, sirf dus rupaye!"
 SEVEN_DAY_TARGET: Sell 50 packs in 7 days. That's your full starter stock out the door and ₹500 in your pocket.
-YOUR_TERRITORY: Andheri West is yours — strong gym and college demand, and low MadSquad seller coverage right now. You're first mover here.
-WHAT_TO_STOCK: Lead with Flamin' Fun Puffs Mini (sku-01) — proven gym seller. Add Mighty Masala Bhujia Mini for corporate offices. Both at ₹10, easy impulse buy.
+YOUR_TERRITORY: Andheri is yours — strong gym and college demand, and low MadSquad seller coverage right now. You're first mover here.
+WHAT_TO_STOCK: Lead with Flamin' Fun Puffs Mini — proven gym seller. Add Mighty Masala Bhujia Mini for SEEPZ Office Park. Both at ₹10, easy impulse buy.
 FIRST_MILESTONE: Sell your first 10 packs to earn your First Win badge + 50 bonus points + ₹100 back on your starter. Aaj pehle 10 nikaalo!`;
 
 type PlanSection = { label: string; icon: typeof MapPin; value: string };
@@ -258,6 +263,28 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
               );
             })}
           </div>
+
+          {/* Venue preview — shows matched venues for selected area + channels */}
+          {details.area && details.channels.length > 0 && (() => {
+            const matched = getVenuesForArea(details.area, details.channels).slice(0, 3);
+            if (matched.length === 0) return null;
+            return (
+              <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: "#FFF3E6", border: "1px solid #FFB800" }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#FF6900" }}>
+                  📍 Verified spots in {details.area}
+                </p>
+                <div className="space-y-1">
+                  {matched.map((v) => (
+                    <div key={v.name} className="flex items-center gap-2">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium" style={{ background: "white", color: "#6B5B45" }}>{v.channel}</span>
+                      <span className="text-xs font-medium" style={{ color: "#1A1200" }}>{v.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] mt-1.5" style={{ color: "#9C8870" }}>Your plan will be built around these.</p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Hours */}
@@ -370,9 +397,10 @@ export default function OnboardingPage() {
   const handleBuildPlan = async () => {
     setScreen("plan");
     setLoadingPlan(true);
-    const text = await callMentor(buildPlanSystem(), buildPlanPrompt(pkg, details), FALLBACK_PLAN);
+    const areaFallback = buildAreaFallbackPlan(details.area, details.channels, pkg);
+    const text = await callMentor(buildPlanSystem(), buildPlanPrompt(pkg, details), areaFallback);
     if (text && text.includes("FIRST_MISSION")) setPlan(text);
-    else setPlan(FALLBACK_PLAN);
+    else setPlan(areaFallback);
     setLoadingPlan(false);
   };
 
