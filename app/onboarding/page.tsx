@@ -11,10 +11,17 @@ import GuaranteeBadge from "@/components/ui/GuaranteeBadge";
 
 type Screen = "welcome" | "package" | "details" | "plan" | "done";
 
-const PACKAGES: { value: 100 | 500 | 1000; label: string; packs: string; tag?: string }[] = [
-  { value: 100,  label: "₹100 Starter",  packs: "~10 packs to get going"                     },
-  { value: 500,  label: "₹500 Hustler",  packs: "~50 packs to build real momentum", tag: "Most Popular" },
-  { value: 1000, label: "₹1000 Pro",     packs: "~100 packs for an ambitious start"           },
+const PACKAGES: {
+  value: 100 | 500 | 1000;
+  label: string;
+  packs: number;
+  earn: string;
+  tag?: string;
+  desc: string;
+}[] = [
+  { value: 100,  label: "₹100",  packs: 10,  earn: "₹100", desc: "Starter",   tag: undefined           },
+  { value: 500,  label: "₹500",  packs: 50,  earn: "₹500", desc: "Hustler",   tag: "Most Popular"      },
+  { value: 1000, label: "₹1000", packs: 100, earn: "₹1,000", desc: "Pro",     tag: undefined           },
 ];
 
 const HOURS_OPTIONS = ["2-5 hrs/week", "5-10 hrs/week", "10+ hrs/week"];
@@ -192,52 +199,135 @@ function WelcomeScreen({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
   );
 }
 
-// ── Screen 2 — Package ─────────────────────────────────────────────────────
-function PackageScreen({ selected, onSelect, onNext, onBack }: { selected: 100 | 500 | 1000; onSelect: (v: 100 | 500 | 1000) => void; onNext: () => void; onBack: () => void }) {
+// ── Screen 2 — Package (the USP centrepiece) ───────────────────────────────
+function PackageScreen({
+  selected, onSelect, onNext, onBack,
+}: {
+  selected: 100 | 500 | 1000;
+  onSelect: (v: 100 | 500 | 1000) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const selPkg = PACKAGES.find((p) => p.value === selected)!;
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
-      <div className="px-5 pt-10 pb-5" style={{ background: "linear-gradient(135deg, #1A1200 0%, #3D2B00 100%)" }}>
-        <button onClick={onBack} className="text-xs mb-3 flex items-center gap-1" style={{ color: "rgba(255,255,255,0.6)" }}>
+
+      {/* ── Big guarantee banner at top — the USP hero ── */}
+      <div className="px-5 pt-10 pb-6" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
+        <button onClick={onBack} className="text-xs mb-4 flex items-center gap-1 font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
           ← Back
         </button>
-        <h1 className="text-2xl font-black text-white">Choose your starter pack</h1>
-        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>Pick the size that fits where you're starting</p>
+
+        <div className="mb-4">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold"
+            style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}>
+            <Shield size={13} fill="white" color="white" />
+            MadMix Guarantee — Zero Risk
+          </span>
+        </div>
+
+        <h1 className="text-white font-black leading-tight mb-1" style={{ fontSize: 26, letterSpacing: "-0.01em" }}>
+          Pick your starter pack.
+        </h1>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>
+          Can't sell it all in 7 days? We buy it back. Every rupee protected.
+        </p>
       </div>
 
-      <div className="px-4 py-5 space-y-3 flex-1">
-        {PACKAGES.map(({ value, label, packs, tag }) => (
-          <button
-            key={value}
-            onClick={() => onSelect(value)}
-            className="w-full text-left rounded-2xl p-5 transition-all active:scale-[0.98] relative"
-            style={{
-              border: selected === value ? "2px solid #FF6900" : "1.5px solid #F0E6D8",
-              background: selected === value ? "#FFF3E6" : "white",
-            }}
-          >
-            {tag && (
-              <span className="absolute top-3 right-3 text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: "#FF6900", color: "white" }}>
-                {tag}
-              </span>
-            )}
-            <p className="font-black text-lg" style={{ color: "#1A1200" }}>{label}</p>
-            <p className="text-sm mt-0.5" style={{ color: "#6B5B45" }}>{packs}</p>
-            {selected === value && (
-              <div className="flex items-center gap-1 mt-2">
-                <CheckCircle size={14} style={{ color: "#FF6900" }} />
-                <span className="text-xs font-bold" style={{ color: "#FF6900" }}>Selected</span>
-              </div>
-            )}
-          </button>
-        ))}
+      {/* ── Guarantee details ── */}
+      <div className="mx-4 -mt-3 relative z-10">
+        <div className="bg-white rounded-2xl px-4 py-3 shadow-sm flex items-start gap-3" style={{ border: "1px solid #F0E6D8" }}>
+          <Shield size={18} style={{ color: "#FF6900" }} className="shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-bold" style={{ color: "#1A1200" }}>How the buy-back works</p>
+            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#6B5B45" }}>
+              Sell within 7 days → keep everything. Can't sell in 7 days → MadMix refunds your pack at cost. No questions asked.
+            </p>
+          </div>
+        </div>
+      </div>
 
-        <div className="rounded-2xl px-4 py-4" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800" }}>
-          <p className="text-sm font-bold" style={{ color: "#1A1200" }}>
-            🛡️ MadMix Guarantee
+      {/* ── Package cards ── */}
+      <div className="px-4 pt-5 pb-2 space-y-3 flex-1">
+        {PACKAGES.map(({ value, label, packs, earn, desc, tag }) => {
+          const isSelected = selected === value;
+          return (
+            <button
+              key={value}
+              onClick={() => onSelect(value)}
+              className="w-full text-left rounded-2xl overflow-hidden transition-all active:scale-[0.98] relative"
+              style={{
+                border: isSelected ? "2.5px solid #FF6900" : "1.5px solid #F0E6D8",
+                boxShadow: isSelected ? "0 4px 16px rgba(255,105,0,0.15)" : "none",
+              }}
+            >
+              {/* Card header */}
+              <div className="px-4 py-3 flex items-center justify-between"
+                style={{ background: isSelected ? "#FF6900" : "#FFF8F0" }}>
+                <div className="flex items-center gap-2">
+                  <p className="font-black text-xl" style={{ color: isSelected ? "white" : "#1A1200" }}>{label}</p>
+                  <p className="text-sm font-semibold" style={{ color: isSelected ? "rgba(255,255,255,0.7)" : "#6B5B45" }}>{desc}</p>
+                </div>
+                {tag && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
+                    style={{ background: isSelected ? "rgba(255,255,255,0.25)" : "#FF6900", color: "white" }}>
+                    {tag}
+                  </span>
+                )}
+              </div>
+
+              {/* Card body */}
+              <div className="px-4 py-3 bg-white">
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <p className="text-lg font-black" style={{ color: "#1A1200" }}>{packs}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>packs</p>
+                  </div>
+                  <div className="w-px h-8" style={{ background: "#F0E6D8" }} />
+                  <div className="text-center">
+                    <p className="text-lg font-black" style={{ color: "#FF6900" }}>₹10</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>per pack</p>
+                  </div>
+                  <div className="w-px h-8" style={{ background: "#F0E6D8" }} />
+                  <div className="text-center">
+                    <p className="text-lg font-black" style={{ color: "#22c55e" }}>{earn}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>if you sell all</p>
+                  </div>
+                </div>
+
+                {isSelected && (
+                  <div className="flex items-center gap-1.5 mt-3 pt-3" style={{ borderTop: "1px solid #F0E6D8" }}>
+                    <CheckCircle size={13} style={{ color: "#FF6900" }} />
+                    <span className="text-xs font-bold" style={{ color: "#FF6900" }}>Selected · Buy-back active on this pack</span>
+                  </div>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Projection card when a package is selected ── */}
+      <div className="mx-4 mb-5">
+        <div className="rounded-2xl p-4" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800" }}>
+          <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "#FF6900" }}>
+            What this looks like for you
           </p>
-          <p className="text-xs mt-1 leading-relaxed" style={{ color: "#6B5B45" }}>
-            Don't sell your starter pack in 7 days? MadMix buys it back. Your investment is always protected.
-          </p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <p className="text-base font-black" style={{ color: "#1A1200" }}>{selPkg.packs}</p>
+              <p className="text-[10px]" style={{ color: "#9C8870" }}>packs to sell</p>
+            </div>
+            <div className="text-center">
+              <p className="text-base font-black" style={{ color: "#FF6900" }}>7 days</p>
+              <p className="text-[10px]" style={{ color: "#9C8870" }}>to First Win</p>
+            </div>
+            <div className="text-center">
+              <p className="text-base font-black" style={{ color: "#22c55e" }}>{selPkg.earn}</p>
+              <p className="text-[10px]" style={{ color: "#9C8870" }}>potential earn</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -245,9 +335,9 @@ function PackageScreen({ selected, onSelect, onNext, onBack }: { selected: 100 |
         <button
           onClick={onNext}
           className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
-          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)", boxShadow: "0 6px 20px rgba(255,105,0,0.3)" }}
         >
-          Continue with ₹{selected} pack →
+          Continue with {selPkg.label} pack →
         </button>
       </div>
     </div>
@@ -268,35 +358,35 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
-      <div className="px-5 pt-10 pb-5" style={{ background: "linear-gradient(135deg, #1A1200 0%, #3D2B00 100%)" }}>
-        <button onClick={onBack} className="text-xs mb-3 flex items-center gap-1" style={{ color: "rgba(255,255,255,0.6)" }}>
+      <div className="px-5 pt-10 pb-6" style={{ background: "#1A1200" }}>
+        <button onClick={onBack} className="text-xs mb-4 flex items-center gap-1 font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>
           ← Back
         </button>
-        <h1 className="text-2xl font-black text-white">Tell us about you</h1>
-        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>Your plan gets more personal the more you share</p>
+        <h1 className="text-2xl font-black text-white" style={{ letterSpacing: "-0.01em" }}>Tell us about you</h1>
+        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>Your plan gets more personal the more you share</p>
       </div>
 
-      <div className="px-4 py-5 space-y-5 flex-1">
+      <div className="px-4 py-6 space-y-5 flex-1">
         {/* Name */}
         <div>
-          <label className="text-xs font-bold uppercase tracking-wide block mb-1.5" style={{ color: "#6B5B45" }}>Your Name</label>
+          <label className="text-xs font-bold uppercase tracking-wide block mb-2" style={{ color: "#6B5B45" }}>Your Name</label>
           <input
             value={details.name}
             onChange={(e) => onChange({ ...details, name: e.target.value })}
             placeholder="Full name"
-            className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
-            style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "white" }}
+            className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all"
+            style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "white", fontSize: 15 }}
           />
         </div>
 
         {/* Area */}
         <div>
-          <label className="text-xs font-bold uppercase tracking-wide block mb-1.5" style={{ color: "#6B5B45" }}>Your Area</label>
+          <label className="text-xs font-bold uppercase tracking-wide block mb-2" style={{ color: "#6B5B45" }}>Your Area</label>
           <select
             value={details.area}
             onChange={(e) => onChange({ ...details, area: e.target.value })}
             className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
-            style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "white" }}
+            style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "white", fontSize: 15 }}
           >
             {AREAS.map((a) => <option key={a.name} value={a.name}>{a.name}</option>)}
           </select>
@@ -312,11 +402,11 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
                 <button
                   key={ch}
                   onClick={() => toggleChannel(ch)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
                   style={{
                     background: on ? "#FF6900" : "white",
                     color: on ? "white" : "#6B5B45",
-                    border: on ? "none" : "1px solid #F0E6D8",
+                    border: on ? "none" : "1.5px solid #F0E6D8",
                   }}
                 >
                   {ch}
@@ -325,24 +415,24 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
             })}
           </div>
 
-          {/* Venue preview — shows matched venues for selected area + channels */}
+          {/* Venue preview */}
           {details.area && details.channels.length > 0 && (() => {
             const matched = getVenuesForArea(details.area, details.channels).slice(0, 3);
             if (matched.length === 0) return null;
             return (
-              <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: "#FFF3E6", border: "1px solid #FFB800" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#FF6900" }}>
+              <div className="mt-3 rounded-xl px-4 py-3" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800" }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "#FF6900" }}>
                   📍 Verified spots in {details.area}
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {matched.map((v) => (
                     <div key={v.name} className="flex items-center gap-2">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium" style={{ background: "white", color: "#6B5B45" }}>{v.channel}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold" style={{ background: "white", color: "#6B5B45" }}>{v.channel}</span>
                       <span className="text-xs font-medium" style={{ color: "#1A1200" }}>{v.name}</span>
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] mt-1.5" style={{ color: "#9C8870" }}>Your plan will be built around these.</p>
+                <p className="text-[10px] mt-2" style={{ color: "#9C8870" }}>Your plan will be built around these.</p>
               </div>
             );
           })()}
@@ -358,11 +448,11 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
                 <button
                   key={h}
                   onClick={() => onChange({ ...details, hoursPerWeek: h })}
-                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 py-3 rounded-xl text-xs font-semibold transition-all active:scale-95"
                   style={{
                     background: on ? "#FF6900" : "white",
                     color: on ? "white" : "#6B5B45",
-                    border: on ? "none" : "1px solid #F0E6D8",
+                    border: on ? "none" : "1.5px solid #F0E6D8",
                   }}
                 >
                   {h}
@@ -377,7 +467,7 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
         <button
           onClick={onNext}
           disabled={!details.name.trim() || !details.area || details.channels.length === 0}
-          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform disabled:opacity-50"
+          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform disabled:opacity-40"
           style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
         >
           Build My Plan →
@@ -391,41 +481,57 @@ function DetailsScreen({ details, onChange, onNext, onBack }: {
 function PlanScreen({ plan, pkg, details, onStart }: { plan: string; pkg: number; details: OnboardingDetails; onStart: () => void }) {
   const sections = parsePlan(plan);
   const ICON_MAP = [Zap, Target, MapPin, Package, CheckCircle];
+  const ACCENT_COLORS = ["#FF6900", "#7C3AED", "#16A34A", "#0EA5E9", "#FF6900"];
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
-      <div className="px-5 pt-10 pb-5" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
-        <p className="text-xs font-black uppercase tracking-wider text-white/75">Your AI-Powered Starting Plan</p>
-        <h1 className="text-2xl font-black text-white mt-1">Ready to go, {details.name.split(" ")[0]}! 🎯</h1>
-        <p className="text-sm mt-1 text-white/80">Based on your area, channels, and real demand data in {details.area}</p>
+      <div className="px-5 pt-10 pb-6" style={{ background: "linear-gradient(135deg, #1A1200 0%, #3D2B00 100%)" }}>
+        <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: "rgba(255,165,0,0.6)" }}>
+          AI-Powered Starting Plan
+        </p>
+        <h1 className="text-2xl font-black text-white leading-tight" style={{ letterSpacing: "-0.01em" }}>
+          Ready to go, {details.name.split(" ")[0]}! 🎯
+        </h1>
+        <p className="text-sm mt-1.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+          Built around your area, channels, and real demand in {details.area}
+        </p>
       </div>
 
-      <div className="px-4 py-5 space-y-3 flex-1">
+      {/* Guarantee status bar */}
+      <div className="mx-4 -mt-3 relative z-10">
+        <div className="rounded-xl px-4 py-2.5 flex items-center gap-2 shadow-sm"
+          style={{ background: "#FFF3E6", border: "1.5px solid #FF6900" }}>
+          <Shield size={14} fill="#FF6900" color="#FF6900" />
+          <p className="text-xs font-bold" style={{ color: "#FF6900" }}>
+            Buy-back guarantee active · ₹{pkg} protected for 7 days
+          </p>
+        </div>
+      </div>
+
+      <div className="px-4 pt-5 pb-4 space-y-3 flex-1">
         {sections.map(({ label, value }, i) => {
           const Icon = ICON_MAP[i] ?? Zap;
+          const accent = ACCENT_COLORS[i] ?? "#FF6900";
           return (
             <div key={label} className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
               <div className="flex items-center gap-2 mb-2">
-                <Icon size={14} style={{ color: "#FF6900" }} />
-                <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "#FF6900" }}>{label}</p>
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${accent}18` }}>
+                  <Icon size={13} style={{ color: accent }} />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: accent }}>{label}</p>
               </div>
               <p className="text-sm leading-relaxed font-medium" style={{ color: "#1A1200" }}>{value}</p>
             </div>
           );
         })}
-
-        <div className="rounded-2xl px-4 py-4" style={{ background: "#FFF3E6", border: "1.5px solid #FF6900" }}>
-          <p className="text-xs font-bold" style={{ color: "#FF6900" }}>
-            🛡️ Buy-back guarantee active · ₹{pkg} protected for 7 days
-          </p>
-        </div>
       </div>
 
       <div className="px-4 pb-10">
         <button
           onClick={onStart}
           className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
-          style={{ background: "#1A1200" }}
+          style={{ background: "#1A1200", boxShadow: "0 4px 16px rgba(26,18,0,0.2)" }}
         >
           Start Selling →
         </button>

@@ -2,7 +2,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "@/store/AppContext";
 import { callMentor } from "@/lib/mentor";
-import { Brain, Send, MessageCircle, TrendingUp, Package, MapPin, Zap } from "lucide-react";
+import { Brain, Send, MessageCircle, TrendingUp, Package, MapPin, Zap, Sparkles } from "lucide-react";
 
 const TODAY = new Date("2026-06-27");
 
@@ -37,19 +37,23 @@ const GENERIC_FALLBACK = [
 
 let fallbackIdx = 0;
 
-function InsightCard({ emoji, title, body, tag }: { emoji: string; title: string; body: string; tag?: string }) {
+function InsightCard({ emoji, title, body, tag, accent = "#FF6900" }: {
+  emoji: string; title: string; body: string; tag?: string; accent?: string;
+}) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
+    <div className="bg-white rounded-2xl p-4" style={{ border: "1px solid #F0E6D8" }}>
       <div className="flex items-start gap-3">
-        <span className="text-xl shrink-0 mt-0.5">{emoji}</span>
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-lg" style={{ background: `${accent}12` }}>
+          {emoji}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
             <p className="font-bold text-sm" style={{ color: "#1A1200" }}>{title}</p>
             {tag && (
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: "#FFF3E6", color: "#FF6900" }}>{tag}</span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: `${accent}18`, color: accent }}>{tag}</span>
             )}
           </div>
-          <p className="text-xs mt-1 leading-relaxed" style={{ color: "#6B5B45" }}>{body}</p>
+          <p className="text-xs leading-relaxed" style={{ color: "#6B5B45" }}>{body}</p>
         </div>
       </div>
     </div>
@@ -109,48 +113,78 @@ export default function MentorPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
-      <div className="px-5 pt-8 pb-5" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
+
+      {/* ── Dark purple header ── */}
+      <div className="px-5 pt-12 pb-6" style={{ background: "#1A0035" }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.2)" }}>
-            <Brain size={22} className="text-white" />
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "rgba(124,58,237,0.35)" }}>
+            <Brain size={22} style={{ color: "#A78BFA" }} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-white">AI Mentor</h1>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.8)" }}>Your business advisor from day one</p>
+            <h1 className="text-white font-black text-xl" style={{ letterSpacing: "-0.01em" }}>AI Mentor</h1>
+            <p className="text-xs" style={{ color: "rgba(167,139,250,0.7)" }}>Your business advisor, available 24/7</p>
           </div>
+          <div className="ml-auto">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.3)", color: "#A78BFA" }}>
+              ● Powered by AI
+            </span>
+          </div>
+        </div>
+
+        {/* Quick data strip */}
+        <div className="flex gap-3 mt-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {[
+            { label: "Top SKU", value: topSkuName },
+            { label: "Best Channel", value: fastestChannel },
+            { label: "Total Sold", value: `${totalUnits} packs` },
+          ].map(({ label, value }) => (
+            <div key={label} className="shrink-0 rounded-xl px-3 py-2" style={{ background: "rgba(124,58,237,0.2)" }}>
+              <p className="text-[10px]" style={{ color: "rgba(167,139,250,0.6)" }}>{label}</p>
+              <p className="text-xs font-bold mt-0.5" style={{ color: "white" }}>{value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="px-4 py-4 max-w-5xl mx-auto space-y-4">
-        {/* Insights 2-col on desktop */}
+      <div className="px-4 py-5 max-w-5xl mx-auto space-y-4">
+
+        {/* ── Insights grid ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <InsightCard
             emoji="🔥"
             title="Your strongest SKU"
             body={`${topSkuName} is moving fastest at ${fastestChannel}. Keep stocking it as your lead product.`}
             tag="Top Seller"
+            accent="#FF6900"
           />
           <InsightCard
             emoji="📍"
             title="Your channel edge"
             body={`${fastestChannel} is where your sales are clicking. Double down there before expanding.`}
+            accent="#7C3AED"
           />
           <InsightCard
             emoji="⏰"
             title="Best timing"
             body="Gym crowd peaks 7–9 AM and 6–8 PM. Morning is your sweet spot for Andheri."
+            accent="#0EA5E9"
           />
           <InsightCard
             emoji="🎯"
             title="Next move"
             body={`${totalUnits} packs sold so far. ${Math.max(0, 10 - totalUnits)} more to First Win. Add a college visit this week for a second channel.`}
+            accent="#16A34A"
           />
         </div>
 
-        {/* Chat panel */}
+        {/* ── Chat panel ── */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-          <div className="px-4 py-3 border-b flex items-center gap-2" style={{ borderColor: "#F0E6D8", background: "#FFF8F0" }}>
-            <MessageCircle size={16} style={{ color: "#FF6900" }} />
+
+          {/* Chat header */}
+          <div className="px-4 py-3 border-b flex items-center gap-2.5" style={{ borderColor: "#F0E6D8", background: "#FFF8F0" }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#EDE9FE" }}>
+              <Sparkles size={14} style={{ color: "#7C3AED" }} />
+            </div>
             <p className="font-bold text-sm" style={{ color: "#1A1200" }}>Ask your Mentor anything</p>
           </div>
 
@@ -161,7 +195,7 @@ export default function MentorPage() {
                 key={label}
                 onClick={() => ask(label)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border active:scale-95 transition-all"
-                style={{ borderColor: "#F0E6D8", color: "#6B5B45", background: "#FFF8F0" }}
+                style={{ borderColor: "#E0D6F5", color: "#7C3AED", background: "#F5F3FF" }}
               >
                 <Icon size={11} />
                 {label}
@@ -170,19 +204,30 @@ export default function MentorPage() {
           </div>
 
           {/* Messages */}
-          <div className="px-4 py-2 space-y-3 min-h-[120px] max-h-72 overflow-y-auto">
+          <div className="px-4 py-2 space-y-3 min-h-[140px] max-h-80 overflow-y-auto">
             {messages.length === 0 && (
-              <p className="text-xs text-center py-6" style={{ color: "#9C8870" }}>
-                Tap a question above or type your own below
-              </p>
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#EDE9FE" }}>
+                  <Brain size={20} style={{ color: "#7C3AED" }} />
+                </div>
+                <p className="text-xs text-center" style={{ color: "#9C8870" }}>
+                  Tap a question above or type your own below
+                </p>
+              </div>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                {m.role === "ai" && (
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mr-2 mt-0.5"
+                    style={{ background: "#EDE9FE" }}>
+                    <Brain size={12} style={{ color: "#7C3AED" }} />
+                  </div>
+                )}
                 <div
-                  className="max-w-[82%] px-4 py-3 text-sm leading-relaxed"
+                  className="max-w-[78%] px-4 py-3 text-sm leading-relaxed"
                   style={
                     m.role === "user"
-                      ? { background: "#FF6900", color: "white", borderRadius: "18px 18px 4px 18px" }
+                      ? { background: "#7C3AED", color: "white", borderRadius: "18px 18px 4px 18px" }
                       : { background: "#FFF8F0", color: "#1A1200", border: "1px solid #F0E6D8", borderRadius: "18px 18px 18px 4px" }
                   }
                 >
@@ -192,9 +237,13 @@ export default function MentorPage() {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="px-4 py-3 flex gap-1" style={{ background: "#FFF8F0", border: "1px solid #F0E6D8", borderRadius: "18px 18px 18px 4px" }}>
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mr-2 mt-0.5"
+                  style={{ background: "#EDE9FE" }}>
+                  <Brain size={12} style={{ color: "#7C3AED" }} />
+                </div>
+                <div className="px-4 py-3.5 flex gap-1.5 rounded-[18px]" style={{ background: "#FFF8F0", border: "1px solid #F0E6D8" }}>
                   {[0, 1, 2].map((i) => (
-                    <span key={i} className="w-2 h-2 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                    <span key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: "#7C3AED", animationDelay: `${i * 0.15}s` }} />
                   ))}
                 </div>
               </div>
@@ -210,14 +259,14 @@ export default function MentorPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && ask(input)}
                 placeholder="Ask your mentor anything..."
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm border outline-none"
-                style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "#FFF8F0" }}
+                className="flex-1 px-4 py-3 rounded-xl text-sm border outline-none"
+                style={{ borderColor: "#E0D6F5", color: "#1A1200", background: "#F5F3FF" }}
               />
               <button
                 onClick={() => ask(input)}
                 disabled={!input.trim() || loading}
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 disabled:opacity-40 active:scale-95 transition-all"
-                style={{ background: "#FF6900" }}
+                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 disabled:opacity-40 active:scale-95 transition-all"
+                style={{ background: "#7C3AED" }}
               >
                 <Send size={15} className="text-white" />
               </button>

@@ -90,46 +90,80 @@ const JOURNEY_STAGES = [
   },
 ];
 
-// ── Risk Meter ────────────────────────────────────────────────────────────────
-function RiskMeter({ sales }: { sales: SaleRecord[] }) {
+// ── Protection Hero Card (the USP centrepiece) ────────────────────────────────
+function ProtectionCard({ sales }: { sales: SaleRecord[] }) {
   const recovered = useMemo(() => sales.reduce((s, r) => s + r.value, 0), [sales]);
   const pct = Math.min(100, Math.round((recovered / PACKAGE_COST) * 100));
-  const r = 40;
+  const r = 36;
   const circ = 2 * Math.PI * r;
   const filled = (pct / 100) * circ;
-  const state = pct >= 100 ? "profit" : pct >= 50 ? "halfway" : "recovery";
-  const stateLabel = state === "profit" ? "In Profit 🎉" : state === "halfway" ? "Halfway There!" : "Building Recovery";
-  const stateColor = state === "profit" ? "#22c55e" : state === "halfway" ? "#FFB800" : "#FF6900";
+  const st = pct >= 100 ? "profit" : pct >= 50 ? "halfway" : "recovery";
+  const stateLabel = st === "profit" ? "In Profit! 🎉" : st === "halfway" ? "Halfway There!" : "Building Recovery";
+
+  if (st === "profit") {
+    return (
+      <div className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, #15803d, #22c55e)" }}>
+        <div className="px-5 pt-5 pb-4 flex items-center gap-5">
+          <svg viewBox="0 0 100 100" className="w-20 h-20 shrink-0">
+            <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="10" />
+            <circle cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="10"
+              strokeDasharray={`${circ} 0`} strokeLinecap="round" transform="rotate(-90 50 50)" />
+            <text x="50" y="47" textAnchor="middle" fill="white" fontSize="13" fontWeight="800">100%</text>
+            <text x="50" y="60" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="7">profit</text>
+          </svg>
+          <div>
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">Your Investment</p>
+            <p className="text-white font-black" style={{ fontSize: 28 }}>₹{recovered}</p>
+            <p className="text-white/70 text-sm">fully recovered + ₹{recovered - PACKAGE_COST} profit</p>
+            <span className="inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)", color: "white" }}>
+              {stateLabel}
+            </span>
+          </div>
+        </div>
+        <div className="px-5 pb-4">
+          <p className="text-white/80 text-sm font-semibold">Everything you earn from here is pure profit. 🎉</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-      <div className="flex items-center gap-2 mb-4">
-        <Shield size={16} style={{ color: "#FF6900" }} />
-        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6B5B45" }}>Pack Recovery</p>
-      </div>
-      <div className="flex items-center gap-5">
-        <div className="relative shrink-0">
-          <svg viewBox="0 0 100 100" className="w-24 h-24">
-            <circle cx="50" cy="50" r={r} fill="none" stroke="#F0E6D8" strokeWidth="10" />
-            <circle
-              cx="50" cy="50" r={r} fill="none" stroke={stateColor} strokeWidth="10"
+    <div className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
+      <div className="px-5 pt-5 pb-4">
+        {/* Guarantee badge */}
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold mb-4"
+          style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}>
+          <Shield size={12} fill="white" color="white" />
+          Buy-Back Guarantee · Active
+        </span>
+
+        <div className="flex items-center gap-5">
+          <svg viewBox="0 0 100 100" className="w-24 h-24 shrink-0">
+            <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="10" />
+            <circle cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="10"
               strokeDasharray={`${filled} ${circ}`} strokeLinecap="round"
-              transform="rotate(-90 50 50)" style={{ transition: "stroke-dasharray 1s ease" }}
-            />
-            <text x="50" y="47" textAnchor="middle" fill="#1A1200" fontSize="14" fontWeight="800">{pct}%</text>
-            <text x="50" y="60" textAnchor="middle" fill="#9C8870" fontSize="7">recovered</text>
+              transform="rotate(-90 50 50)" style={{ transition: "stroke-dasharray 1s ease" }} />
+            <text x="50" y="47" textAnchor="middle" fill="white" fontSize="16" fontWeight="800">{pct}%</text>
+            <text x="50" y="61" textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize="7">recovered</text>
           </svg>
+          <div>
+            <p className="text-white font-black" style={{ fontSize: 30 }}>₹{recovered}</p>
+            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}>of ₹{PACKAGE_COST} recovered</p>
+            <span className="inline-block mt-2 text-xs font-bold px-2.5 py-1 rounded-full"
+              style={{ background: "rgba(255,255,255,0.22)", color: "white" }}>
+              {stateLabel}
+            </span>
+          </div>
         </div>
-        <div className="flex-1">
-          <p className="font-black text-base" style={{ color: "#1A1200" }}>₹{recovered} of ₹{PACKAGE_COST}</p>
-          <span className="text-xs font-bold px-2 py-0.5 rounded-full inline-block mt-1" style={{ background: `${stateColor}20`, color: stateColor }}>
-            {stateLabel}
-          </span>
-          <p className="text-xs mt-2 leading-relaxed" style={{ color: "#6B5B45" }}>
-            {state === "profit" ? "Everything you earn from here is pure profit. 🎉"
-              : `₹${PACKAGE_COST - recovered} more and your pack is fully recovered.`}
-          </p>
+      </div>
+
+      <div className="px-5 pb-5">
+        <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.2)" }}>
+          <div className="h-full rounded-full bg-white transition-all duration-700" style={{ width: `${pct}%` }} />
         </div>
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.75)" }}>
+          ₹{PACKAGE_COST - recovered} more to fully recover · {7 - DAYS_IN} days remaining on guarantee
+        </p>
       </div>
     </div>
   );
@@ -143,8 +177,7 @@ function FoundationTracker({ sales }: { sales: SaleRecord[] }) {
   const daysLeft = 7 - DAYS_IN;
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-sm"
-      style={{ border: firstWinDone ? "2px solid #22c55e" : "2px solid #FF6900" }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: firstWinDone ? "2px solid #22c55e" : "2px solid #FF6900" }}>
       <div className="px-4 py-3"
         style={{ background: firstWinDone ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #FF6900, #FFB800)" }}>
         <div className="flex items-center justify-between">
@@ -201,7 +234,6 @@ function JourneyCard({ totalUnits }: { totalUnits: number }) {
         <span className="ml-auto text-xs font-semibold" style={{ color: "#FF6900" }}>Stage {stageIdx + 1} of 3</span>
       </div>
 
-      {/* Stage stepper */}
       <div className="px-4 pt-4 space-y-0">
         {JOURNEY_STAGES.map((s, i) => {
           const done = i < stageIdx;
@@ -230,7 +262,6 @@ function JourneyCard({ totalUnits }: { totalUnits: number }) {
 
                 {active && (
                   <div className="mt-2 space-y-2">
-                    {/* Progress bar within current stage */}
                     {stageIdx < 2 && (
                       <div>
                         <div className="h-2 rounded-full overflow-hidden" style={{ background: "#F0E6D8" }}>
@@ -242,11 +273,9 @@ function JourneyCard({ totalUnits }: { totalUnits: number }) {
                         </p>
                       </div>
                     )}
-                    {/* Current mission */}
                     <div className="px-3 py-2 rounded-xl text-xs" style={{ background: "#FFF3E6", color: "#FF6900" }}>
                       {stage.mission}
                     </div>
-                    {/* What unlocks next */}
                     {stageIdx < 2 && (
                       <div className="rounded-xl p-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
                         <p className="text-xs font-bold mb-1.5" style={{ color: "#15803d" }}>
@@ -274,7 +303,7 @@ function JourneyCard({ totalUnits }: { totalUnits: number }) {
 // ── Level Up Banner (triggers when near sold-out) ─────────────────────────────
 function LevelUpBanner({ remainingStock, starterPackage }: { remainingStock: number; starterPackage: number }) {
   const [ordered, setOrdered] = useState(false);
-  const threshold = Math.ceil((starterPackage / 10) * 0.2); // 20% of pack
+  const threshold = Math.ceil((starterPackage / 10) * 0.2);
   if (remainingStock > threshold) return null;
 
   const nextPkg = starterPackage === 100 ? 500 : 1000;
@@ -324,8 +353,8 @@ function LevelUpBanner({ remainingStock, starterPackage }: { remainingStock: num
 
 // ── Weekly Route Planner ──────────────────────────────────────────────────────
 function WeeklyRouteCard() {
-  const today = TODAY.getDay(); // 0=Sun...6=Sat
-  const todayIdx = [1, 2, 3, 4, 5, 6].indexOf(today); // Mon-Sat indices in WEEKLY_ROUTE
+  const today = TODAY.getDay();
+  const todayIdx = [1, 2, 3, 4, 5, 6].indexOf(today);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: "1px solid #F0E6D8" }}>
@@ -393,8 +422,6 @@ function RepeatCustomerCard({ sales }: { sales: SaleRecord[] }) {
   const repeatCount = sales.filter((s) => s.repeatCustomer).length;
   const totalSales = sales.length;
   const repeatPct = totalSales > 0 ? Math.round((repeatCount / totalSales) * 100) : 0;
-
-  // Average sale value (plain language, no jargon)
   const totalValue = sales.reduce((s, r) => s + r.value, 0);
   const avgSale = totalSales > 0 ? Math.round(totalValue / totalSales) : 0;
 
@@ -462,7 +489,6 @@ function SquadSupport() {
           </div>
         ))}
       </div>
-      <p className="text-[10px] mt-3 text-center" style={{ color: "#9C8870" }}>Mentorship — learning from sellers who know your area</p>
     </div>
   );
 }
@@ -471,12 +497,14 @@ function SquadSupport() {
 function MomentumCard({ streak }: { streak: number }) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4" style={{ border: "1px solid #F0E6D8" }}>
-      <Flame size={28} style={{ color: "#FF6900" }} />
-      <div className="flex-1">
-        <p className="font-black" style={{ color: "#1A1200" }}>{streak}-day momentum!</p>
-        <p className="text-xs mt-0.5" style={{ color: "#6B5B45" }}>You've sold every day this week. Keep the streak alive today.</p>
+      <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#FFF3E6" }}>
+        <Flame size={22} style={{ color: "#FF6900" }} />
       </div>
-      <div className="flex gap-1">
+      <div className="flex-1">
+        <p className="font-black text-sm" style={{ color: "#1A1200" }}>{streak}-day momentum streak!</p>
+        <p className="text-xs mt-0.5" style={{ color: "#6B5B45" }}>You've sold every day this week. Keep it alive today.</p>
+      </div>
+      <div className="flex gap-1 shrink-0">
         {Array.from({ length: 7 }, (_, i) => (
           <div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background: i < streak ? "#FF6900" : "#F0E6D8" }} />
         ))}
@@ -485,7 +513,7 @@ function MomentumCard({ streak }: { streak: number }) {
   );
 }
 
-// ── Reorder Stock (with real stock levels) ────────────────────────────────────
+// ── Reorder Stock ─────────────────────────────────────────────────────────────
 function ReorderCard({ sales, packageUnits }: { sales: SaleRecord[]; packageUnits: number }) {
   const [done, setDone] = useState(false);
 
@@ -620,100 +648,113 @@ export default function HomePage() {
   const todaySales = arjunSales.filter((s) => isSameDay(new Date(s.timestamp), TODAY));
   const todayUnits = todaySales.reduce((t, s) => t + s.units, 0);
   const totalUnits = arjunSales.reduce((t, s) => t + s.units, 0);
-
   const packageUnits = state.starterPackage / 10;
   const remainingStock = Math.max(0, packageUnits - totalUnits);
   const stageIdx = totalUnits >= 35 ? 2 : totalUnits >= FIRST_WIN_TARGET ? 1 : 0;
 
-  // Determine top channel for bundle suggestion
   const chMap: Record<string, number> = {};
   arjunSales.forEach((s) => { chMap[s.channel] = (chMap[s.channel] ?? 0) + s.units; });
   const topChannel = Object.entries(chMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Gym";
 
   return (
     <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
-      {/* Header */}
-      <div className="px-5 pt-8 pb-6" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
-        <p className="text-sm font-medium mb-1" style={{ color: "rgba(255,255,255,0.85)" }}>Aaj kya plan hai? 🌶️</p>
-        <h1 className="text-white text-2xl font-extrabold">Hey {seller.shortName} 👋</h1>
-        <div className="flex items-center gap-3 mt-3">
-          <PointsPill points={points} size="lg" />
-          <TierBadge tier={seller.tier} size="md" />
+
+      {/* ── Dark header — premium feel ── */}
+      <div className="px-5 pt-12 pb-6" style={{ background: "#1A1200" }}>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {seller.area} · Day {DAYS_IN} of 7
+            </p>
+            <h1 className="text-white font-black" style={{ fontSize: 26, letterSpacing: "-0.01em" }}>
+              Hey {seller.shortName} 👋
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <PointsPill points={points} size="md" />
+            <TierBadge tier={seller.tier} size="sm" />
+          </div>
         </div>
+
         {nextTier && (
-          <div className="mt-3">
-            <div className="flex justify-between text-xs mb-1" style={{ color: "rgba(255,255,255,0.8)" }}>
-              <span>{seller.tier}</span>
-              <span>{nextTier.tier} at {nextTier.pointsNeeded.toLocaleString("en-IN")} pts</span>
+          <div className="mt-4">
+            <div className="flex justify-between mb-1.5">
+              <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{seller.tier}</span>
+              <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{nextTier.tier} at {nextTier.pointsNeeded.toLocaleString("en-IN")} pts</span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.3)" }}>
-              <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+            <div className="h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, background: "#FF6900" }} />
             </div>
           </div>
         )}
       </div>
 
-      <div className="px-4 py-4 space-y-4 max-w-5xl mx-auto">
-        {/* Quick stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="px-4 py-5 space-y-4 max-w-5xl mx-auto">
+
+        {/* ── Protection Hero — the USP centrepiece ── */}
+        <ProtectionCard sales={arjunSales} />
+
+        {/* ── Quick stat chips ── */}
+        <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Today's Packs", value: todayUnits, sub: `${todaySales.length} sales logged`, icon: ShoppingBag },
-            { label: "Total This Week", value: totalUnits, sub: "packs sold", icon: TrendingUp },
-            { label: "Day", value: `${DAYS_IN}/7`, sub: "of First Win window", icon: Clock },
-            { label: "Points", value: points.toLocaleString("en-IN"), sub: seller.tier, icon: Zap },
-          ].map(({ label, value, sub, icon: Icon }) => (
-            <div key={label} className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-              <div className="flex items-center gap-1.5 mb-1">
-                <Icon size={13} style={{ color: "#FF6900" }} />
-                <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#9C8870" }}>{label}</p>
-              </div>
-              <p className="text-xl font-black" style={{ color: "#1A1200" }}>{value}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>{sub}</p>
+            { label: "Today", value: todayUnits, icon: ShoppingBag },
+            { label: "Total", value: totalUnits, icon: TrendingUp },
+            { label: `Day ${DAYS_IN}/7`, value: null, icon: Clock },
+            { label: seller.tier, value: points, icon: Zap },
+          ].map(({ label, value, icon: Icon }) => (
+            <div key={label} className="rounded-2xl p-3 text-center" style={{ background: "white", border: "1px solid #F0E6D8" }}>
+              <Icon size={14} style={{ color: "#FF6900" }} className="mx-auto mb-1" />
+              <p className="text-sm font-black" style={{ color: "#1A1200" }}>
+                {value !== null ? (typeof value === "number" ? value.toLocaleString("en-IN") : value) : "—"}
+              </p>
+              <p className="text-[9px] mt-0.5 leading-tight" style={{ color: "#9C8870" }}>{label}</p>
             </div>
           ))}
         </div>
 
-        {/* Momentum */}
+        {/* ── Momentum ── */}
         <MomentumCard streak={streak} />
 
-        {/* Log Sale CTA */}
+        {/* ── PRIMARY CTA — big and unmissable ── */}
         <Link
           href="/log-sale"
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-white text-base shadow-lg active:scale-95 transition-transform"
-          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+          className="flex items-center justify-center gap-3 w-full rounded-2xl font-black text-white text-lg active:scale-[0.97] transition-transform"
+          style={{
+            background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)",
+            padding: "20px 24px",
+            boxShadow: "0 8px 24px rgba(255,105,0,0.35)",
+          }}
         >
-          <Zap size={20} fill="white" />
+          <Zap size={22} fill="white" />
           Log a Sale — Earn Points
+          <ArrowRight size={18} />
         </Link>
 
-        {/* Risk Meter + Foundation Tracker */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <RiskMeter sales={arjunSales} />
-          <FoundationTracker sales={arjunSales} />
-        </div>
+        {/* ── First Win Tracker ── */}
+        <FoundationTracker sales={arjunSales} />
 
-        {/* Level Up Banner — only visible when near sold-out */}
+        {/* ── Level Up Banner ── */}
         <LevelUpBanner remainingStock={remainingStock} starterPackage={state.starterPackage} />
 
-        {/* Journey */}
+        {/* ── Journey ── */}
         <JourneyCard totalUnits={totalUnits} />
 
-        {/* Weekly Route */}
+        {/* ── Weekly Route ── */}
         <WeeklyRouteCard />
 
-        {/* Smart Bundle + Repeat Customer: 2-col on desktop */}
+        {/* ── Bundle + Regulars ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <SmartBundleCard channel={topChannel} />
           <RepeatCustomerCard sales={arjunSales} />
         </div>
 
-        {/* Week Chart + Squad: 2-col */}
+        {/* ── Week Chart + Squad ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <WeekChart sales={arjunSales} />
           <SquadSupport />
         </div>
 
-        {/* Reorder + Territory: 2-col */}
+        {/* ── Reorder + Territory ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <ReorderCard sales={arjunSales} packageUnits={packageUnits} />
           <div className="bg-white rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
@@ -749,7 +790,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Tier perks */}
+        {/* ── Tier perks ── */}
         <div className={`rounded-2xl p-4 ${tierCfg.bg}`}>
           <p className={`text-xs font-bold uppercase tracking-wide ${tierCfg.color} mb-2`}>
             {tierCfg.emoji} Your {seller.tier} Perks
@@ -764,19 +805,23 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Ask AI card */}
+        {/* ── AI Mentor CTA ── */}
         <button
           onClick={() => setAiOpen(true)}
           className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all active:scale-[0.98]"
           style={{ background: "#1A1200" }}
         >
-          <MessageCircle size={20} className="text-white shrink-0" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(124,58,237,0.3)" }}>
+            <MessageCircle size={18} style={{ color: "#A78BFA" }} />
+          </div>
           <div className="flex-1 text-left">
             <p className="font-bold text-white text-sm">Ask your AI Mentor anything</p>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>Timing, route, bundles, territory — ask away</p>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Timing, route, bundles, territory — ask away</p>
           </div>
-          <ArrowRight size={16} className="text-white/60" />
+          <ArrowRight size={16} className="text-white/40" />
         </button>
+
+        <div className="h-4" />
       </div>
 
       {aiOpen && <AskAIModal onClose={() => setAiOpen(false)} />}

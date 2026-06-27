@@ -79,23 +79,24 @@ export default function LogSalePage() {
     <div className="min-h-screen md:max-w-2xl md:mx-auto" style={{ background: "#FFF8F0" }}>
       {/* Header */}
       <div
-        className="flex items-center gap-3 px-4 pt-10 pb-4 bg-white"
-        style={{ borderBottom: "1px solid #F0E6D8" }}
+        className="flex items-center gap-3 px-4 pt-10 pb-4"
+        style={{ background: "#1A1200" }}
       >
         {step !== "sku" && step !== "success" && (
           <button onClick={() => setStep(step === "photo" ? "details" : "sku")} className="p-1">
-            <ChevronLeft size={22} style={{ color: "#1A1200" }} />
+            <ChevronLeft size={22} className="text-white/70" />
           </button>
         )}
-        <h1 className="text-lg font-extrabold" style={{ color: "#1A1200" }}>Log a Sale</h1>
+        <h1 className="text-lg font-black text-white" style={{ letterSpacing: "-0.01em" }}>Log a Sale</h1>
         {step !== "success" && (
-          <div className="ml-auto flex gap-1">
+          <div className="ml-auto flex gap-1.5">
             {(["sku", "details", "photo"] as Step[]).map((s, i) => (
               <div
                 key={s}
-                className="h-1.5 w-6 rounded-full transition-colors"
+                className="h-1.5 rounded-full transition-all"
                 style={{
-                  background: step === s ? "#FF6900" : i < ["sku","details","photo"].indexOf(step) ? "#FFB800" : "#F0E6D8",
+                  width: step === s ? 24 : 8,
+                  background: step === s ? "#FF6900" : i < ["sku","details","photo"].indexOf(step) ? "#FFB800" : "rgba(255,255,255,0.2)",
                 }}
               />
             ))}

@@ -80,14 +80,23 @@ export default function RewardsPage() {
   return (
     <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
       {/* Header */}
-      <div className="px-5 pt-8 pb-5" style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)" }}>
-        <h1 className="text-white text-xl font-extrabold">
-          {tab === "progress" ? "Your Rewards" : "Mumbai Rankings 👑"}
-        </h1>
-        <div className="flex items-center gap-3 mt-2">
-          <PointsPill points={state.points} size="md" />
-          <TierBadge tier={state.seller.tier} size="sm" />
-          <span className="ml-auto text-purple-200 text-sm font-semibold">#{myRank} in Mumbai</span>
+      <div className="px-5 pt-12 pb-6" style={{ background: "linear-gradient(135deg, #3B0764 0%, #7C3AED 100%)" }}>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: "rgba(167,139,250,0.6)" }}>
+              {tab === "progress" ? "Rewards Store" : "Mumbai Rankings"}
+            </p>
+            <h1 className="text-white font-black text-2xl" style={{ letterSpacing: "-0.01em" }}>
+              {tab === "progress" ? "Your Rewards" : "Rankings 👑"}
+            </h1>
+          </div>
+          <div className="flex flex-col items-end gap-2 mt-1">
+            <PointsPill points={state.points} size="md" />
+            <div className="flex items-center gap-2">
+              <TierBadge tier={state.seller.tier} size="sm" />
+              <span className="text-xs font-bold" style={{ color: "rgba(167,139,250,0.8)" }}>#{myRank} Mumbai</span>
+            </div>
+          </div>
         </div>
       </div>
 
