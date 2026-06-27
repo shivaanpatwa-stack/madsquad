@@ -5,8 +5,9 @@ import { useApp } from "@/store/AppContext";
 import { callMentor } from "@/lib/mentor";
 import { AREAS, CHANNELS } from "@/lib/sellers";
 import type { OnboardingDetails } from "@/store/AppContext";
-import { Shield, Target, TrendingUp, MapPin, Package, Clock, Mic, Zap, CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
+import { Shield, Target, TrendingUp, MapPin, Package, Clock, Mic, Zap, CheckCircle, ArrowRight, ChevronRight, LayoutGrid } from "lucide-react";
 import { getVenuesForArea, getVenueListString, buildAreaFallbackPlan } from "@/lib/venues";
+import GuaranteeBadge from "@/components/ui/GuaranteeBadge";
 
 type Screen = "welcome" | "package" | "details" | "plan" | "done";
 
@@ -68,64 +69,124 @@ function parsePlan(text: string): PlanSection[] {
 
 // ── Screen 1 — Welcome ─────────────────────────────────────────────────────
 function WelcomeScreen({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
+  const VALUE_PROPS = [
+    {
+      Icon: Shield,
+      iconBg: "#FFF3E6",
+      iconColor: "#FF6900",
+      title: "Risk-free start",
+      body: "Sell your starter pack in 7 days, or MadMix buys it back. Your investment is always protected.",
+    },
+    {
+      Icon: Target,
+      iconBg: "#EDE9FE",
+      iconColor: "#7C3AED",
+      title: "A plan built for your area",
+      body: "AI-generated first mission using real demand signals where you actually are — not generic advice.",
+    },
+    {
+      Icon: LayoutGrid,
+      iconBg: "#DCFCE7",
+      iconColor: "#16A34A",
+      title: "Everything in one place",
+      body: "Log sales, track stock, get guidance, earn rewards, see your territory — one clean app.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
-      {/* Skip to demo */}
-      <div className="flex justify-end px-5 pt-5">
-        <button onClick={onSkip} className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ color: "#9C8870", background: "#F0E6D8" }}>
-          Skip → Demo Dashboard
+    <div className="screen" style={{ background: "#FFF8F0" }}>
+      {/* Skip — top-right, unobtrusive */}
+      <div className="flex justify-end px-5 pt-5 shrink-0">
+        <button
+          onClick={onSkip}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
+          style={{ color: "#9C8870", background: "#F0E6D8" }}
+        >
+          Skip → Demo
         </button>
       </div>
 
-      {/* Hero */}
+      {/* ── Hero — full-bleed gradient, all the energy ── */}
       <div
-        className="mx-4 mt-2 rounded-3xl px-6 pt-10 pb-8"
-        style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}
+        className="px-6 pt-8 pb-10 animate-fade-in-up"
+        style={{ background: "linear-gradient(150deg, #FF6900 0%, #FFB800 100%)" }}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg" style={{ background: "rgba(255,255,255,0.2)", color: "white" }}>
+        {/* Logo mark */}
+        <div className="flex items-center gap-3 mb-8">
+          <div
+            className="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-base"
+            style={{ background: "rgba(255,255,255,0.22)", color: "white", border: "1px solid rgba(255,255,255,0.3)" }}
+          >
             M
           </div>
           <div>
-            <p className="font-black text-white text-xl leading-tight">MadSquad</p>
-            <p className="text-white/70 text-xs">by MadMix</p>
+            <p className="font-black text-white text-base leading-tight tracking-tight">MadSquad</p>
+            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>by MadMix</p>
           </div>
         </div>
-        <h1 className="text-3xl font-black text-white leading-tight mb-3">
+
+        {/* Guarantee badge — the USP centrepiece */}
+        <div className="mb-5">
+          <GuaranteeBadge
+            variant="hero"
+            label="Sell it or we buy it back. Zero risk."
+          />
+        </div>
+
+        {/* Headline */}
+        <h1
+          className="font-black text-white leading-tight mb-3"
+          style={{ fontSize: "clamp(28px, 8vw, 38px)", letterSpacing: "-0.02em" }}
+        >
           Start selling MadMix.<br />
-          <span style={{ color: "#FFE066" }}>We'll set you up to win.</span>
+          <span style={{ color: "#FFE066" }}>We set you up to win.</span>
         </h1>
-        <p className="text-white/85 text-sm leading-relaxed">
-          MadSquad gives you a risk-free start, a personalized plan built around where demand actually is, and everything you need to grow your sales in one place.
+
+        {/* Sub */}
+        <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 15, lineHeight: 1.6 }}>
+          A personalized plan built around where demand actually is, near you.
         </p>
       </div>
 
-      {/* Value props */}
-      <div className="px-4 mt-5 space-y-3">
-        {[
-          { icon: "🛡️", title: "Risk-free start", body: "Sell your starter pack or MadMix buys it back — no questions asked." },
-          { icon: "🎯", title: "A plan built for your area", body: "AI-generated mission based on where real demand is, near you." },
-          { icon: "📈", title: "Everything in one app", body: "Sales, stock, guidance, rewards, and territory — all here." },
-        ].map(({ icon, title, body }) => (
-          <div key={title} className="flex items-start gap-4 bg-white rounded-2xl px-4 py-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-            <span className="text-2xl shrink-0">{icon}</span>
+      {/* ── Value props — clear, spaced, consistent ── */}
+      <div className="flex-1 px-5 pt-6 space-y-3">
+        {VALUE_PROPS.map(({ Icon, iconBg, iconColor, title, body }, i) => (
+          <div
+            key={title}
+            className="animate-fade-in-up flex items-start gap-4 rounded-[20px] px-4 py-4"
+            style={{
+              background: "#fff",
+              border: "1px solid #F0E6D8",
+              boxShadow: "0 2px 8px rgba(26,18,0,0.04)",
+              animationDelay: `${(i + 1) * 60}ms`,
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0"
+              style={{ background: iconBg }}
+            >
+              <Icon size={20} color={iconColor} strokeWidth={2} />
+            </div>
             <div>
-              <p className="font-bold text-sm" style={{ color: "#1A1200" }}>{title}</p>
-              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#6B5B45" }}>{body}</p>
+              <p className="font-bold text-sm leading-tight" style={{ color: "#1A1200" }}>{title}</p>
+              <p className="text-xs mt-1 leading-relaxed" style={{ color: "#6B5B45" }}>{body}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="px-4 pb-10 mt-6">
+      {/* ── CTA ── */}
+      <div className="px-5 pt-6 pb-10 shrink-0 space-y-3 animate-fade-in-up stagger-4">
         <button
           onClick={onNext}
-          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
-          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+          className="btn btn-primary btn-full"
+          style={{ fontSize: 16 }}
         >
-          Sign in with Google →
+          Get Started →
         </button>
-        <p className="text-center text-xs mt-3" style={{ color: "#9C8870" }}>Quick setup · No real data sent</p>
+        <p className="text-center text-xs" style={{ color: "#9C8870" }}>
+          Quick setup · No real data sent · Powered by MadMix
+        </p>
       </div>
     </div>
   );
