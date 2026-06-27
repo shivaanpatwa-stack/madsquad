@@ -7,25 +7,47 @@ import { calcPointsForSale } from "@/lib/points";
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE SHAPE
 // ─────────────────────────────────────────────────────────────────────────────
+export type OnboardingDetails = {
+  name: string;
+  area: string;
+  channels: string[];
+  hoursPerWeek: string;
+};
+
 export type AppState = {
   seller: Seller;
   sales: SaleRecord[];
   points: number;
   redeemedRewardIds: string[];
-  lastSalePoints: number | null; // for the "points earned" animation
-  streak: number; // consecutive days with a sale
+  lastSalePoints: number | null;
+  streak: number;
+  // Onboarding flow state
+  onboardingComplete: boolean;
+  starterPackage: 100 | 500 | 1000;
+  onboardingDetails: OnboardingDetails;
+  generatedPlan: string | null;
 };
 
-const RIYA = SELLERS.find((s) => s.isCurrentUser)!;
-const BASE_POINTS = 1240; // Riya's pre-seeded points
+const ARJUN = SELLERS.find((s) => s.isCurrentUser)!;
+// 520 pts = just entered Muncher tier. Includes First Win bonus + 5 days of activity.
+const BASE_POINTS = 520;
 
 const initialState: AppState = {
-  seller: RIYA,
+  seller: ARJUN,
   sales: SEED_SALES,
   points: BASE_POINTS,
   redeemedRewardIds: [],
   lastSalePoints: null,
   streak: 5,
+  onboardingComplete: false,
+  starterPackage: 500,
+  onboardingDetails: {
+    name: "Arjun Sharma",
+    area: "Andheri",
+    channels: ["Gym", "College"],
+    hoursPerWeek: "5-10",
+  },
+  generatedPlan: null,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -34,7 +56,9 @@ const initialState: AppState = {
 type Action =
   | { type: "LOG_SALE"; sale: SaleRecord }
   | { type: "REDEEM_REWARD"; rewardId: string; pointsCost: number }
-  | { type: "CLEAR_LAST_SALE_POINTS" };
+  | { type: "CLEAR_LAST_SALE_POINTS" }
+  | { type: "COMPLETE_ONBOARDING"; pkg: 100 | 500 | 1000; details: OnboardingDetails; plan: string | null }
+  | { type: "SKIP_TO_DEMO" };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -65,6 +89,16 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case "CLEAR_LAST_SALE_POINTS":
       return { ...state, lastSalePoints: null };
+    case "COMPLETE_ONBOARDING":
+      return {
+        ...state,
+        onboardingComplete: true,
+        starterPackage: action.pkg,
+        onboardingDetails: action.details,
+        generatedPlan: action.plan,
+      };
+    case "SKIP_TO_DEMO":
+      return { ...state, onboardingComplete: true };
     default:
       return state;
   }
@@ -78,6 +112,8 @@ const AppContext = createContext<{
   logSale: (sale: SaleRecord) => void;
   redeemReward: (rewardId: string, pointsCost: number) => void;
   clearLastSalePoints: () => void;
+  completeOnboarding: (pkg: 100 | 500 | 1000, details: OnboardingDetails, plan: string | null) => void;
+  skipToDemo: () => void;
 } | null>(null);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -95,8 +131,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch({ type: "CLEAR_LAST_SALE_POINTS" });
   }, []);
 
+  const completeOnboarding = useCallback(
+    (pkg: 100 | 500 | 1000, details: OnboardingDetails, plan: string | null) => {
+      dispatch({ type: "COMPLETE_ONBOARDING", pkg, details, plan });
+    },
+    []
+  );
+
+  const skipToDemo = useCallback(() => {
+    dispatch({ type: "SKIP_TO_DEMO" });
+  }, []);
+
   return (
-    <AppContext.Provider value={{ state, logSale, redeemReward, clearLastSalePoints }}>
+    <AppContext.Provider value={{ state, logSale, redeemReward, clearLastSalePoints, completeOnboarding, skipToDemo }}>
       {children}
     </AppContext.Provider>
   );

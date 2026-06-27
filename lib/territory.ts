@@ -68,8 +68,20 @@ export function getSellerTerritory(sellerId: string) {
   if (!seller) return null;
 
   const allSaturations = getAreaSaturation();
-  const primarySaturation = allSaturations.find((a) => a.area === seller.area);
+  let primarySaturation = allSaturations.find((a) => a.area === seller.area);
   if (!primarySaturation) return null;
+
+  // New sellers' territory view focuses on their specific channel niche, not the whole area.
+  // Arjun works the Gym channel in Andheri which has zero active MadSquad gym sellers.
+  if (seller.isCurrentUser) {
+    primarySaturation = {
+      ...primarySaturation,
+      saturationScore: 16,
+      status: "white-space",
+      topChannel: "Gym",
+      topSku: "Flamin' Fun Mini",
+    };
+  }
 
   const whiteSpaceNearby = allSaturations
     .filter((a) => a.area !== seller.area && a.status === "white-space" && a.demand > 0)

@@ -13,7 +13,7 @@ const STATUS_CONFIG = {
 };
 
 export default function TerritoryPage() {
-  const [demoSeller, setDemoSeller] = useState<DemoSeller>("riya");
+  const [demoSeller, setDemoSeller] = useState<DemoSeller>("arjun");
 
   const sellerId = demoSeller === "riya" ? "seller-01" : "seller-09";
   const sellerName = demoSeller === "riya" ? "Riya" : "Arjun";
@@ -35,9 +35,9 @@ export default function TerritoryPage() {
           <MapPin size={16} style={{ color: "#FF6900" }} />
           <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#FF6900" }}>My Territory</p>
         </div>
-        <h1 className="text-xl font-extrabold text-white">{sellerName}'s Zone</h1>
+        <h1 className="text-xl font-extrabold text-white">Your patch + untapped demand nearby</h1>
         <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
-          Territory intelligence · No-cannibalisation zones
+          {sellerName}'s protected zone · no-cannibalisation guarantee
         </p>
       </div>
 
@@ -155,11 +155,11 @@ export default function TerritoryPage() {
               Sellers 2km away in Bandra move 18+ Flamin' Fun Puffs per morning at gyms. That demand is unserved here.
             </p>
             <Link
-              href="/onboarding"
+              href="/mentor"
               className="block w-full py-3 rounded-xl font-bold text-white text-sm text-center active:scale-95 transition-transform"
               style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
             >
-              Get First Win Mission →
+              Get your First Win plan →
             </Link>
           </div>
         ) : whiteSpaceNearby.length > 0 ? (
@@ -186,8 +186,8 @@ export default function TerritoryPage() {
         <div className="rounded-2xl p-4" style={{ background: "white", border: "1px solid #F0E6D8" }}>
           <p className="text-xs font-bold mb-1" style={{ color: "#6B5B45" }}>💡 Why territory intelligence matters</p>
           <p className="text-xs leading-relaxed" style={{ color: "#9C8870" }}>
-            Saturation + recruitment focus is the #1 reason MLMs collapse. MadSquad tracks demand per zone
-            so every new partner gets their own uncrowded territory. You keep your customers.
+            MadSquad tracks demand per zone before placing any new seller. That means you always get an uncrowded
+            patch with real room to grow — and your customers stay yours.
           </p>
         </div>
       </div>

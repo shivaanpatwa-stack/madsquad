@@ -32,7 +32,6 @@ export const SELLERS: Seller[] = [
     tier: "Muncher",
     points: 1240,
     avatar: "RS",
-    isCurrentUser: true,
   },
   {
     id: "seller-02",
@@ -113,15 +112,15 @@ export const SELLERS: Seller[] = [
   },
   {
     id: "seller-09",
-    name: "Arjun Kapoor",
+    name: "Arjun Sharma",
     shortName: "Arjun",
     partnerType: "Home-based seller",
     area: "Andheri",
     pincode: "400053",
-    tier: "Nibbler",
-    points: 0,
-    avatar: "AK",
-    isNewSeller: true,
+    tier: "Muncher",
+    points: 520,
+    avatar: "AS",
+    isCurrentUser: true,
   },
 ];
 

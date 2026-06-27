@@ -1,337 +1,434 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
-import { FIRST_WIN_FALLBACK_MISSION, type FirstWinMission } from "@/lib/territory";
+import { useRouter } from "next/navigation";
+import { useApp } from "@/store/AppContext";
 import { callMentor } from "@/lib/mentor";
-import { MapPin, Package, Clock, Zap, Mic, Target, CheckCircle } from "lucide-react";
+import { AREAS, CHANNELS } from "@/lib/sellers";
+import type { OnboardingDetails } from "@/store/AppContext";
+import { Shield, Target, TrendingUp, MapPin, Package, Clock, Mic, Zap, CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
 
-type Step = "welcome" | "mission" | "tracking" | "celebration";
+type Screen = "welcome" | "package" | "details" | "plan" | "done";
 
-const MISSION_SYSTEM = `You are the MadSquad Mission Engine. Give a brand-new Indian snack distributor their very first sales mission. It must be hyper-specific and feel guaranteed to work. Use ONLY the data provided. Output a single mission using these exact labeled sections on separate lines:
-WHERE: [exact venue + area]
-WHAT: [exact SKU name and price]
-WHEN: [exact time window]
-WHY IT WORKS: [cite the nearby-seller numbers given]
-SCRIPT: [1-2 lines of casual Hinglish a young Indian seller would say at this venue]
-TARGET: [units to sell and the reward]
-Keep it punchy and confident. Never generic.`;
-
-const MISSION_PROMPT = `New seller details:
-- Name: Arjun Kapoor
-- Area: Andheri West (400053)
-- Partner type: Home-based seller
-- Nearest active seller: Sneha Nair (Andheri, Corporate Office specialist — gym channel is UNTAPPED in this zone)
-- Nearby demand signal: Sellers 2km away in Bandra move 18+ Flamin' Fun Puffs (Mini) per morning at gyms
-- Most proven gym SKU nearby: Flamin' Fun Puffs (Mini) — ₹10 per pack
-- Territory analysis: Zero active MadSquad sellers at Andheri West gyms
-- First Win target: 10 packs
-- Reward: First Win badge + 50 bonus points + your first ₹100 back
-
-Generate the mission now.`;
-
-function parseMission(text: string): Partial<FirstWinMission> {
-  const extract = (label: string): string => {
-    const re = new RegExp(`${label}:\\s*(.+?)(?=\\n[A-Z\\s]+:|$)`, "si");
-    return text.match(re)?.[1]?.trim() ?? "";
-  };
-  return {
-    where: extract("WHERE"),
-    what: extract("WHAT"),
-    when: extract("WHEN"),
-    whyItWorks: extract("WHY IT WORKS"),
-    script: extract("SCRIPT"),
-  };
-}
-
-const MISSION_FIELDS: { key: keyof FirstWinMission; label: string; icon: typeof MapPin }[] = [
-  { key: "where",      label: "WHERE",         icon: MapPin    },
-  { key: "what",       label: "WHAT TO SELL",  icon: Package   },
-  { key: "when",       label: "WHEN",          icon: Clock     },
-  { key: "whyItWorks", label: "WHY IT WORKS",  icon: Zap       },
-  { key: "script",     label: "YOUR SCRIPT",   icon: Mic       },
+const PACKAGES: { value: 100 | 500 | 1000; label: string; packs: string; tag?: string }[] = [
+  { value: 100,  label: "₹100 Starter",  packs: "~10 packs to get going"                     },
+  { value: 500,  label: "₹500 Hustler",  packs: "~50 packs to build real momentum", tag: "Most Popular" },
+  { value: 1000, label: "₹1000 Pro",     packs: "~100 packs for an ambitious start"           },
 ];
 
-export default function OnboardingPage() {
-  const [step, setStep] = useState<Step>("welcome");
-  const [mission, setMission] = useState<FirstWinMission>(FIRST_WIN_FALLBACK_MISSION);
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
+const HOURS_OPTIONS = ["2-5 hrs/week", "5-10 hrs/week", "10+ hrs/week"];
 
-  const target = mission.target;
-  const pct = Math.min(100, Math.round((progress / target) * 100));
+// ── Gemini plan prompt ─────────────────────────────────────────────────────
+const buildPlanSystem = () => `You are the MadSquad Plan Engine. A new Indian snack distributor just signed up. Using their package size, location, accessible channels, and hours, plus nearby demand and seller-coverage data provided, generate a specific, encouraging 7-day starting plan. Output exactly 5 labeled sections on separate lines:
+FIRST_MISSION: [exact venue type + area + SKU + time window + 1-2 line casual Hinglish sales script]
+SEVEN_DAY_TARGET: [number of packs and what winning looks like]
+YOUR_TERRITORY: [assigned low-saturation zone + a positive reason]
+WHAT_TO_STOCK: [which SKUs to prioritise and why]
+FIRST_MILESTONE: [what to hit, the reward, and an encouraging line]
+Be specific, confident, and supportive. Never generic. Use the numbers provided. Do not mention failure, quitting, or risk statistics — keep it positive and action-focused.`;
 
-  const getMission = async () => {
-    setLoading(true);
-    const text = await callMentor(MISSION_SYSTEM, MISSION_PROMPT, "");
-    if (text) {
-      const parsed = parseMission(text);
-      if (parsed.where && parsed.what && parsed.when) {
-        setMission({ ...FIRST_WIN_FALLBACK_MISSION, ...parsed });
-      }
-    }
-    setLoading(false);
-    setStep("mission");
+const buildPlanPrompt = (pkg: number, details: OnboardingDetails) => `New seller details:
+- Package: ₹${pkg} (~${pkg / 10} packs at ₹10 each)
+- Name: ${details.name}
+- Area: ${details.area}
+- Channels: ${details.channels.join(", ")}
+- Hours per week: ${details.hoursPerWeek}
+- Nearby demand signal: ${details.area} gyms move 18+ Flamin' Fun Puffs Mini per morning; corporate offices in ${details.area} prefer Bhujia Classic; college canteens love Chaat Corner Puffs
+- Seller coverage: Low saturation in ${details.area} — room to grow
+- First Win target: ${Math.round(pkg / 10 * 0.2)} packs (first milestone)
+- 7-day target: ${Math.round(pkg / 10)} packs
+
+Generate the plan now.`;
+
+const FALLBACK_PLAN = `FIRST_MISSION: Gold's Gym, Andheri West — sell Flamin' Fun Puffs Mini (₹10) between 7–9 AM. Script: "Bhai, pre-workout snack try kar — MadMix ka naya puff hai, sirf dus rupaye!"
+SEVEN_DAY_TARGET: Sell 50 packs in 7 days. That's your full starter stock out the door and ₹500 in your pocket.
+YOUR_TERRITORY: Andheri West is yours — strong gym and college demand, and low MadSquad seller coverage right now. You're first mover here.
+WHAT_TO_STOCK: Lead with Flamin' Fun Puffs Mini (sku-01) — proven gym seller. Add Mighty Masala Bhujia Mini for corporate offices. Both at ₹10, easy impulse buy.
+FIRST_MILESTONE: Sell your first 10 packs to earn your First Win badge + 50 bonus points + ₹100 back on your starter. Aaj pehle 10 nikaalo!`;
+
+type PlanSection = { label: string; icon: typeof MapPin; value: string };
+
+function parsePlan(text: string): PlanSection[] {
+  const extract = (key: string): string => {
+    const re = new RegExp(`${key}:\\s*(.+?)(?=\\n[A-Z_]+:|$)`, "si");
+    return text.match(re)?.[1]?.trim() ?? "";
   };
+  return [
+    { label: "YOUR FIRST MISSION",    icon: Zap,     value: extract("FIRST_MISSION")   },
+    { label: "7-DAY TARGET",          icon: Target,  value: extract("SEVEN_DAY_TARGET") },
+    { label: "YOUR TERRITORY",        icon: MapPin,  value: extract("YOUR_TERRITORY")   },
+    { label: "WHAT TO STOCK",         icon: Package, value: extract("WHAT_TO_STOCK")    },
+    { label: "YOUR FIRST MILESTONE",  icon: CheckCircle, value: extract("FIRST_MILESTONE") },
+  ].filter((s) => !!s.value);
+}
 
-  if (step === "welcome") {
-    return (
-      <div className="min-h-screen flex flex-col md:max-w-2xl md:mx-auto" style={{ background: "#FFF8F0" }}>
-        <div className="px-5 pt-12 pb-6" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center text-2xl font-black text-white mb-4"
-            style={{ background: "rgba(255,255,255,0.2)" }}>
-            AK
+// ── Screen 1 — Welcome ─────────────────────────────────────────────────────
+function WelcomeScreen({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
+      {/* Skip to demo */}
+      <div className="flex justify-end px-5 pt-5">
+        <button onClick={onSkip} className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ color: "#9C8870", background: "#F0E6D8" }}>
+          Skip → Demo Dashboard
+        </button>
+      </div>
+
+      {/* Hero */}
+      <div
+        className="mx-4 mt-2 rounded-3xl px-6 pt-10 pb-8"
+        style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg" style={{ background: "rgba(255,255,255,0.2)", color: "white" }}>
+            M
           </div>
-          <h1 className="text-2xl font-black text-white">Swagat hai, Arjun! 🎉</h1>
-          <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
-            Andheri West · Home-based seller · Nibbler
-          </p>
+          <div>
+            <p className="font-black text-white text-xl leading-tight">MadSquad</p>
+            <p className="text-white/70 text-xs">by MadMix</p>
+          </div>
         </div>
+        <h1 className="text-3xl font-black text-white leading-tight mb-3">
+          Start selling MadMix.<br />
+          <span style={{ color: "#FFE066" }}>We'll set you up to win.</span>
+        </h1>
+        <p className="text-white/85 text-sm leading-relaxed">
+          MadSquad gives you a risk-free start, a personalized plan built around where demand actually is, and everything you need to grow your sales in one place.
+        </p>
+      </div>
 
-        <div className="flex-1 px-4 py-6 space-y-5">
-          <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#FFF3E6" }}>
-                <Target size={22} style={{ color: "#FF6900" }} />
-              </div>
-              <div>
-                <p className="font-bold" style={{ color: "#1A1200" }}>7-Day First Win Guarantee</p>
-                <p className="text-sm mt-1 leading-relaxed" style={{ color: "#6B5B45" }}>
-                  88% of new distributors quit before making their first sale. MadSquad fixes that
-                  with a territory-specific mission — where to go, what to sell, what to say.
-                </p>
-              </div>
+      {/* Value props */}
+      <div className="px-4 mt-5 space-y-3">
+        {[
+          { icon: "🛡️", title: "Risk-free start", body: "Sell your starter pack or MadMix buys it back — no questions asked." },
+          { icon: "🎯", title: "A plan built for your area", body: "AI-generated mission based on where real demand is, near you." },
+          { icon: "📈", title: "Everything in one app", body: "Sales, stock, guidance, rewards, and territory — all here." },
+        ].map(({ icon, title, body }) => (
+          <div key={title} className="flex items-start gap-4 bg-white rounded-2xl px-4 py-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
+            <span className="text-2xl shrink-0">{icon}</span>
+            <div>
+              <p className="font-bold text-sm" style={{ color: "#1A1200" }}>{title}</p>
+              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#6B5B45" }}>{body}</p>
             </div>
           </div>
+        ))}
+      </div>
 
-          <div className="space-y-3">
-            {[
-              { emoji: "📍", text: "We'll find the exact venue nearest to you with zero competition." },
-              { emoji: "📦", text: "We'll pick the SKU that's already selling fast in your zone." },
-              { emoji: "💬", text: "We'll write your opening line — in Hinglish that actually works." },
-            ].map(({ emoji, text }) => (
-              <div key={text} className="flex items-start gap-3">
-                <span className="text-xl shrink-0 mt-0.5">{emoji}</span>
-                <p className="text-sm" style={{ color: "#1A1200" }}>{text}</p>
-              </div>
-            ))}
-          </div>
+      <div className="px-4 pb-10 mt-6">
+        <button
+          onClick={onNext}
+          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
+          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+        >
+          Sign in with Google →
+        </button>
+        <p className="text-center text-xs mt-3" style={{ color: "#9C8870" }}>Quick setup · No real data sent</p>
+      </div>
+    </div>
+  );
+}
 
-          <div className="rounded-2xl p-4" style={{ background: "#FFF3E6", border: "1px solid #FFB800" }}>
-            <p className="text-xs font-bold" style={{ color: "#FF6900" }}>
-              🎁 First Win reward: 50 bonus points + your first ₹100 back + First Win badge
-            </p>
-          </div>
-        </div>
+// ── Screen 2 — Package ─────────────────────────────────────────────────────
+function PackageScreen({ selected, onSelect, onNext, onBack }: { selected: 100 | 500 | 1000; onSelect: (v: 100 | 500 | 1000) => void; onNext: () => void; onBack: () => void }) {
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
+      <div className="px-5 pt-10 pb-5" style={{ background: "linear-gradient(135deg, #1A1200 0%, #3D2B00 100%)" }}>
+        <button onClick={onBack} className="text-xs mb-3 flex items-center gap-1" style={{ color: "rgba(255,255,255,0.6)" }}>
+          ← Back
+        </button>
+        <h1 className="text-2xl font-black text-white">Choose your starter pack</h1>
+        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>Pick the size that fits where you're starting</p>
+      </div>
 
-        <div className="px-4 pb-10">
+      <div className="px-4 py-5 space-y-3 flex-1">
+        {PACKAGES.map(({ value, label, packs, tag }) => (
           <button
-            onClick={getMission}
-            disabled={loading}
-            className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+            key={value}
+            onClick={() => onSelect(value)}
+            className="w-full text-left rounded-2xl p-5 transition-all active:scale-[0.98] relative"
+            style={{
+              border: selected === value ? "2px solid #FF6900" : "1.5px solid #F0E6D8",
+              background: selected === value ? "#FFF3E6" : "white",
+            }}
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                Building your mission...
+            {tag && (
+              <span className="absolute top-3 right-3 text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: "#FF6900", color: "white" }}>
+                {tag}
               </span>
-            ) : (
-              "Get My First Mission 🎯"
+            )}
+            <p className="font-black text-lg" style={{ color: "#1A1200" }}>{label}</p>
+            <p className="text-sm mt-0.5" style={{ color: "#6B5B45" }}>{packs}</p>
+            {selected === value && (
+              <div className="flex items-center gap-1 mt-2">
+                <CheckCircle size={14} style={{ color: "#FF6900" }} />
+                <span className="text-xs font-bold" style={{ color: "#FF6900" }}>Selected</span>
+              </div>
             )}
           </button>
+        ))}
+
+        <div className="rounded-2xl px-4 py-4" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800" }}>
+          <p className="text-sm font-bold" style={{ color: "#1A1200" }}>
+            🛡️ MadMix Guarantee
+          </p>
+          <p className="text-xs mt-1 leading-relaxed" style={{ color: "#6B5B45" }}>
+            Don't sell your starter pack in 7 days? MadMix buys it back. Your investment is always protected.
+          </p>
         </div>
       </div>
-    );
-  }
 
-  if (step === "mission") {
-    return (
-      <div className="min-h-screen md:max-w-2xl md:mx-auto" style={{ background: "#FFF8F0" }}>
-        <div className="px-5 pt-10 pb-4" style={{ background: "#1A1200" }}>
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#FF6900" }}>
-            Your First Win Mission
-          </p>
-          <h1 className="text-xl font-extrabold text-white mt-0.5">Teri mission ready hai 🎯</h1>
-          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>
-            Based on real demand data · Zero competition zone
-          </p>
-        </div>
-
-        <div className="px-4 py-5 space-y-3">
-          {MISSION_FIELDS.map(({ key, label, icon: Icon }) => {
-            const value = mission[key as keyof FirstWinMission];
-            if (!value || typeof value !== "string") return null;
-            return (
-              <div key={key} className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon size={13} style={{ color: "#FF6900" }} />
-                  <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "#FF6900" }}>
-                    {label}
-                  </p>
-                </div>
-                <p className="text-sm leading-relaxed font-medium" style={{ color: "#1A1200" }}>{value}</p>
-              </div>
-            );
-          })}
-
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)", border: "none" }}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Target size={16} className="text-white" />
-              <p className="text-[10px] font-black uppercase tracking-wider text-white">TARGET</p>
-            </div>
-            <p className="text-white font-bold text-sm">
-              Sell {mission.target} packs = First Win badge + 50 bonus points + your first ₹100 back
-            </p>
-          </div>
-        </div>
-
-        <div className="px-4 pb-10">
-          <button
-            onClick={() => setStep("tracking")}
-            className="w-full py-4 rounded-2xl font-black text-white active:scale-95 transition-transform"
-            style={{ background: "#1A1200" }}
-          >
-            Got It — Let's Go! 💪
-          </button>
-        </div>
+      <div className="px-4 pb-10">
+        <button
+          onClick={onNext}
+          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
+          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+        >
+          Continue with ₹{selected} pack →
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  if (step === "tracking") {
-    return (
-      <div className="min-h-screen md:max-w-2xl md:mx-auto" style={{ background: "#FFF8F0" }}>
-        <div className="px-5 pt-10 pb-4 bg-white" style={{ borderBottom: "1px solid #F0E6D8" }}>
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#FF6900" }}>
-            First Win Progress
-          </p>
-          <h1 className="text-xl font-extrabold mt-0.5" style={{ color: "#1A1200" }}>
-            {progress} / {target} packs
-          </h1>
+// ── Screen 3 — Details ─────────────────────────────────────────────────────
+function DetailsScreen({ details, onChange, onNext, onBack }: {
+  details: OnboardingDetails;
+  onChange: (d: OnboardingDetails) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const toggleChannel = (ch: string) => {
+    const curr = details.channels;
+    onChange({ ...details, channels: curr.includes(ch) ? curr.filter((c) => c !== ch) : [...curr, ch] });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
+      <div className="px-5 pt-10 pb-5" style={{ background: "linear-gradient(135deg, #1A1200 0%, #3D2B00 100%)" }}>
+        <button onClick={onBack} className="text-xs mb-3 flex items-center gap-1" style={{ color: "rgba(255,255,255,0.6)" }}>
+          ← Back
+        </button>
+        <h1 className="text-2xl font-black text-white">Tell us about you</h1>
+        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>Your plan gets more personal the more you share</p>
+      </div>
+
+      <div className="px-4 py-5 space-y-5 flex-1">
+        {/* Name */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wide block mb-1.5" style={{ color: "#6B5B45" }}>Your Name</label>
+          <input
+            value={details.name}
+            onChange={(e) => onChange({ ...details, name: e.target.value })}
+            placeholder="Full name"
+            className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+            style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "white" }}
+          />
         </div>
 
-        <div className="px-4 py-6 space-y-6">
-          {/* Progress bar */}
-          <div>
-            <div className="h-4 rounded-full overflow-hidden" style={{ background: "#F0E6D8" }}>
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${pct}%`,
-                  background: "linear-gradient(90deg, #FF6900, #FFB800)",
-                }}
-              />
-            </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-xs" style={{ color: "#9C8870" }}>0 packs</span>
-              <span className="text-xs font-bold" style={{ color: "#FF6900" }}>{pct}%</span>
-              <span className="text-xs" style={{ color: "#9C8870" }}>{target} packs</span>
-            </div>
-          </div>
+        {/* Area */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wide block mb-1.5" style={{ color: "#6B5B45" }}>Your Area</label>
+          <select
+            value={details.area}
+            onChange={(e) => onChange({ ...details, area: e.target.value })}
+            className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+            style={{ borderColor: "#F0E6D8", color: "#1A1200", background: "white" }}
+          >
+            {AREAS.map((a) => <option key={a.name} value={a.name}>{a.name}</option>)}
+          </select>
+        </div>
 
-          {/* Mission recap card */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-            <p className="text-xs font-bold mb-2" style={{ color: "#6B5B45" }}>Your Mission</p>
-            <div className="space-y-1.5">
-              <p className="text-xs" style={{ color: "#1A1200" }}>
-                <span style={{ color: "#FF6900", fontWeight: 700 }}>WHERE: </span>{mission.where}
-              </p>
-              <p className="text-xs" style={{ color: "#1A1200" }}>
-                <span style={{ color: "#FF6900", fontWeight: 700 }}>WHEN: </span>{mission.when}
-              </p>
-              <div className="rounded-xl p-3 mt-2" style={{ background: "#FFF3E6" }}>
-                <p className="text-xs italic" style={{ color: "#6B5B45" }}>"{mission.script}"</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Days counter */}
-          <div className="flex items-center justify-between px-1">
-            {[1,2,3,4,5,6,7].map((d) => (
-              <div key={d} className="flex flex-col items-center gap-1">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+        {/* Channels */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wide block mb-2" style={{ color: "#6B5B45" }}>Where Can You Sell?</label>
+          <div className="flex flex-wrap gap-2">
+            {CHANNELS.map((ch) => {
+              const on = details.channels.includes(ch);
+              return (
+                <button
+                  key={ch}
+                  onClick={() => toggleChannel(ch)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
                   style={{
-                    background: d === 1 ? "#FF6900" : "#F0E6D8",
-                    color: d === 1 ? "white" : "#9C8870",
+                    background: on ? "#FF6900" : "white",
+                    color: on ? "white" : "#6B5B45",
+                    border: on ? "none" : "1px solid #F0E6D8",
                   }}
                 >
-                  {d}
-                </div>
-                <span className="text-[9px]" style={{ color: "#9C8870" }}>Day {d}</span>
-              </div>
-            ))}
+                  {ch}
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* Log a pack button */}
-          <button
-            onClick={() => {
-              const next = progress + 1;
-              setProgress(next);
-              if (next >= target) setTimeout(() => setStep("celebration"), 400);
-            }}
-            className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
-            style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
-          >
-            I Sold a Pack! +1 🔥
-          </button>
-
-          <button
-            onClick={() => setProgress(Math.max(0, progress - 1))}
-            className="w-full py-2 text-xs"
-            style={{ color: "#9C8870" }}
-          >
-            Undo last
-          </button>
+        {/* Hours */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wide block mb-2" style={{ color: "#6B5B45" }}>Hours You Can Sell Per Week</label>
+          <div className="flex gap-2">
+            {HOURS_OPTIONS.map((h) => {
+              const on = details.hoursPerWeek === h;
+              return (
+                <button
+                  key={h}
+                  onClick={() => onChange({ ...details, hoursPerWeek: h })}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                  style={{
+                    background: on ? "#FF6900" : "white",
+                    color: on ? "white" : "#6B5B45",
+                    border: on ? "none" : "1px solid #F0E6D8",
+                  }}
+                >
+                  {h}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-    );
-  }
 
-  // celebration
+      <div className="px-4 pb-10">
+        <button
+          onClick={onNext}
+          disabled={!details.name.trim() || !details.area || details.channels.length === 0}
+          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+        >
+          Build My Plan →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Screen 4 — AI Plan ────────────────────────────────────────────────────
+function PlanScreen({ plan, pkg, details, onStart }: { plan: string; pkg: number; details: OnboardingDetails; onStart: () => void }) {
+  const sections = parsePlan(plan);
+  const ICON_MAP = [Zap, Target, MapPin, Package, CheckCircle];
+
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 text-center md:max-w-2xl md:mx-auto"
-      style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}
-    >
-      <div className="text-8xl mb-4 animate-bounce">🎉</div>
-      <h1 className="text-3xl font-black text-white">FIRST WIN!</h1>
-      <p className="text-white/90 mt-2 text-lg">Tujhe {target} packs bech diye!</p>
+    <div className="min-h-screen flex flex-col" style={{ background: "#FFF8F0" }}>
+      <div className="px-5 pt-10 pb-5" style={{ background: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)" }}>
+        <p className="text-xs font-black uppercase tracking-wider text-white/75">Your AI-Powered Starting Plan</p>
+        <h1 className="text-2xl font-black text-white mt-1">Ready to go, {details.name.split(" ")[0]}! 🎯</h1>
+        <p className="text-sm mt-1 text-white/80">Based on your area, channels, and real demand data in {details.area}</p>
+      </div>
 
-      <div className="mt-6 bg-white/20 rounded-2xl p-5 w-full">
-        <div className="flex justify-around">
-          {[
-            { label: "Packs Sold", value: target },
-            { label: "Bonus Points", value: "+50" },
-            { label: "Cash Back", value: "₹100" },
-          ].map(({ label, value }) => (
-            <div key={label} className="text-center">
-              <p className="text-2xl font-black text-white">{value}</p>
-              <p className="text-xs text-white/75 mt-0.5">{label}</p>
+      <div className="px-4 py-5 space-y-3 flex-1">
+        {sections.map(({ label, value }, i) => {
+          const Icon = ICON_MAP[i] ?? Zap;
+          return (
+            <div key={label} className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Icon size={14} style={{ color: "#FF6900" }} />
+                <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "#FF6900" }}>{label}</p>
+              </div>
+              <p className="text-sm leading-relaxed font-medium" style={{ color: "#1A1200" }}>{value}</p>
             </div>
+          );
+        })}
+
+        <div className="rounded-2xl px-4 py-4" style={{ background: "#FFF3E6", border: "1.5px solid #FF6900" }}>
+          <p className="text-xs font-bold" style={{ color: "#FF6900" }}>
+            🛡️ Buy-back guarantee active · ₹{pkg} protected for 7 days
+          </p>
+        </div>
+      </div>
+
+      <div className="px-4 pb-10">
+        <button
+          onClick={onStart}
+          className="w-full py-4 rounded-2xl font-black text-white text-base active:scale-95 transition-transform"
+          style={{ background: "#1A1200" }}
+        >
+          Start Selling →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Onboarding Orchestrator ───────────────────────────────────────────
+export default function OnboardingPage() {
+  const router = useRouter();
+  const { completeOnboarding, skipToDemo } = useApp();
+
+  const [screen, setScreen] = useState<Screen>("welcome");
+  const [pkg, setPkg] = useState<100 | 500 | 1000>(500);
+  const [details, setDetails] = useState<OnboardingDetails>({
+    name: "",
+    area: "Andheri",
+    channels: ["Gym"],
+    hoursPerWeek: "5-10 hrs/week",
+  });
+  const [plan, setPlan] = useState<string>(FALLBACK_PLAN);
+  const [loadingPlan, setLoadingPlan] = useState(false);
+
+  const handleSkip = () => {
+    skipToDemo();
+    router.push("/");
+  };
+
+  const handleBuildPlan = async () => {
+    setScreen("plan");
+    setLoadingPlan(true);
+    const text = await callMentor(buildPlanSystem(), buildPlanPrompt(pkg, details), FALLBACK_PLAN);
+    if (text && text.includes("FIRST_MISSION")) setPlan(text);
+    else setPlan(FALLBACK_PLAN);
+    setLoadingPlan(false);
+  };
+
+  const handleStart = () => {
+    completeOnboarding(pkg, details, plan);
+    router.push("/");
+  };
+
+  return (
+    <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
+      {/* Progress dots */}
+      {screen !== "welcome" && screen !== "done" && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {(["package", "details", "plan"] as Screen[]).map((s) => (
+            <div
+              key={s}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: screen === s ? 24 : 8,
+                background: screen === s ? "#FF6900" : "#F0E6D8",
+              }}
+            />
           ))}
         </div>
-      </div>
+      )}
 
-      <div className="mt-4 bg-white/20 rounded-2xl px-4 py-3 w-full flex items-center gap-3">
-        <CheckCircle size={20} className="text-white shrink-0" />
-        <p className="text-white text-sm font-bold text-left">First Win badge unlocked 🏆</p>
-      </div>
+      {screen === "welcome" && <WelcomeScreen onNext={() => setScreen("package")} onSkip={handleSkip} />}
 
-      <p className="text-white/75 text-sm mt-4">
-        88/100 new sellers quit before this moment. You didn't. That's everything.
-      </p>
+      {screen === "package" && (
+        <PackageScreen selected={pkg} onSelect={setPkg} onNext={() => setScreen("details")} onBack={() => setScreen("welcome")} />
+      )}
 
-      <Link
-        href="/"
-        className="mt-8 w-full py-4 bg-white rounded-2xl font-black text-lg active:scale-95 transition-transform block"
-        style={{ color: "#FF6900" }}
-      >
-        Go to Dashboard 🚀
-      </Link>
+      {screen === "details" && (
+        <DetailsScreen details={details} onChange={setDetails} onNext={handleBuildPlan} onBack={() => setScreen("package")} />
+      )}
+
+      {screen === "plan" && (
+        loadingPlan ? (
+          <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8" style={{ background: "#FFF8F0" }}>
+            <div className="w-16 h-16 rounded-3xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}>
+              <Zap size={28} className="text-white" />
+            </div>
+            <div className="text-center">
+              <p className="font-black text-lg" style={{ color: "#1A1200" }}>Building your plan...</p>
+              <p className="text-sm mt-1" style={{ color: "#9C8870" }}>Analysing demand in {details.area} 🔍</p>
+            </div>
+            <div className="flex gap-1.5">
+              {[0,1,2].map((i) => (
+                <span key={i} className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ background: "#FF6900", animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <PlanScreen plan={plan} pkg={pkg} details={details} onStart={handleStart} />
+        )
+      )}
     </div>
   );
 }

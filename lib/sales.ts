@@ -112,8 +112,23 @@ const OTHER_SALES: Omit<SaleRecord, "id">[] = [
   { sellerId:"seller-08", skuId:"sku-14", units:8,  channel:"Corporate Office", area:"BKC", pincode:"400051", ageBand:"26-40", repeatCustomer:false, photoProof:true, timestamp:daysAgo(2,11),  value:160 },
 ];
 
+// ---------- ARJUN'S SALES (seller-09) — 5 days in, gym-first strategy ----------
+// New seller in Andheri, Flamin' Fun Puffs Mini (sku-01) as hero SKU.
+// First Win target: 10 packs. Currently at 9 packs — 1 away from milestone.
+const ARJUN_SALES: Omit<SaleRecord, "id">[] = [
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(5,8),  value:10 },
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(5,11), value:10 },
+  { sellerId:"seller-09", skuId:"sku-07", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(4,9),  value:10 },
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(4,12), value:10 },
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:true,  photoProof:true, timestamp:daysAgo(3,8),  value:10 },
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"College", area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(2,14), value:10 },
+  { sellerId:"seller-09", skuId:"sku-07", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(2,9),  value:10 },
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:true,  photoProof:true, timestamp:daysAgo(1,8),  value:10 },
+  { sellerId:"seller-09", skuId:"sku-01", units:1, channel:"Gym",     area:"Andheri", pincode:"400053", ageBand:"18-25", repeatCustomer:false, photoProof:true, timestamp:daysAgo(0,9),  value:10 },
+];
+
 // Build final array with IDs
-const ALL_SALES_RAW = [...RIYA_SALES, ...OTHER_SALES];
+const ALL_SALES_RAW = [...RIYA_SALES, ...OTHER_SALES, ...ARJUN_SALES];
 
 export const SEED_SALES: SaleRecord[] = ALL_SALES_RAW.map((s, i) => ({
   ...s,
