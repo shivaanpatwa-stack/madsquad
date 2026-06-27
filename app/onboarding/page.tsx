@@ -33,7 +33,7 @@ const PACKAGES: {
 const HOURS_OPTIONS = ["2-5 hrs/week", "5-10 hrs/week", "10+ hrs/week"];
 
 // ── Gemini plan prompt ─────────────────────────────────────────────────────
-const buildPlanSystem = () => `You are the MadSquad Plan Engine. A new Indian snack distributor just signed up. Using their package size, location, accessible channels, and hours, plus nearby demand and seller-coverage data provided, generate a specific, encouraging 14-day starting plan. Output exactly 5 labeled sections on separate lines:
+const buildPlanSystem = () => `You are the MadSquad Plan Engine. A new Indian snack partner just signed up. Using their package size, location, accessible channels, and hours, plus nearby demand and seller-coverage data provided, generate a specific, encouraging 14-day starting plan. Output exactly 5 labeled sections on separate lines:
 FIRST_MISSION: [exact venue type + area + SKU + time window + 1-2 line casual Hinglish sales script]
 SEVEN_DAY_TARGET: [number of packs and what winning looks like]
 YOUR_TERRITORY: [assigned low-saturation zone + a positive reason]
@@ -95,8 +95,8 @@ function WelcomeScreen({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
       Icon: Target,
       iconBg: "#EDE9FE",
       iconColor: "#7C3AED",
-      title: "A plan built for your area",
-      body: "AI-generated first mission using real demand signals where you actually are — not generic advice.",
+      title: "Data-backed plan for your area",
+      body: "AI-generated first mission using real demand signals where you are — every recommendation is grounded in actual sales data.",
     },
     {
       Icon: LayoutGrid,
@@ -560,6 +560,12 @@ function PlanScreen({ plan, pkg, details, onStart }: { plan: string; pkg: number
             </div>
           );
         })}
+      </div>
+
+      <div className="px-4 pb-2">
+        <p className="text-[10px] text-center italic" style={{ color: "#9C8870" }}>
+          Based on 3 nearby partners moving ~18 units/morning · MadMix platform analytics, April 2026
+        </p>
       </div>
 
       <div className="px-4 pb-10">

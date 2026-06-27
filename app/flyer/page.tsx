@@ -447,15 +447,42 @@ export default function FlyerPage() {
               Share on WhatsApp
             </button>
 
-            {/* Secondary share grid */}
+            {/* Platform share grid */}
             <div className="grid grid-cols-3 gap-2">
-              <button onClick={handleCopyCaption}
+              {/* Instagram */}
+              <button
+                onClick={() => { window.open(`https://www.instagram.com/`, "_blank"); triggerReferral(); setShareOpen(false); }}
                 className="flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-95"
-                style={{ background: captionCopied ? "#DCFCE7" : "#F8F4F0" }}>
-                {captionCopied ? <Check size={18} style={{ color: "#22c55e" }} /> : <Copy size={18} style={{ color: "#6B5B45" }} />}
-                <span className="text-[10px] font-bold" style={{ color: captionCopied ? "#22c55e" : "#6B5B45" }}>
-                  {captionCopied ? "Copied!" : "Copy Caption"}
-                </span>
+                style={{ background: "#fdf2f8" }}>
+                <span style={{ fontSize: 18 }}>📸</span>
+                <span className="text-[10px] font-bold" style={{ color: "#be185d" }}>Instagram</span>
+              </button>
+
+              {/* Facebook */}
+              <button
+                onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(refLink)}&quote=${encodeURIComponent(caption)}`, "_blank"); triggerReferral(); setShareOpen(false); }}
+                className="flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-95"
+                style={{ background: "#eff6ff" }}>
+                <span style={{ fontSize: 18 }}>📘</span>
+                <span className="text-[10px] font-bold" style={{ color: "#1d4ed8" }}>Facebook</span>
+              </button>
+
+              {/* X / Twitter */}
+              <button
+                onClick={() => { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}&url=${encodeURIComponent(refLink)}`, "_blank"); triggerReferral(); setShareOpen(false); }}
+                className="flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-95"
+                style={{ background: "#f0f0f0" }}>
+                <span style={{ fontSize: 18 }}>🐦</span>
+                <span className="text-[10px] font-bold" style={{ color: "#1A1200" }}>X / Twitter</span>
+              </button>
+
+              {/* LinkedIn */}
+              <button
+                onClick={() => { window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(refLink)}`, "_blank"); triggerReferral(); setShareOpen(false); }}
+                className="flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-95"
+                style={{ background: "#eff6ff" }}>
+                <span style={{ fontSize: 18 }}>💼</span>
+                <span className="text-[10px] font-bold" style={{ color: "#0369a1" }}>LinkedIn</span>
               </button>
 
               <button onClick={handleCopyLink}
@@ -520,27 +547,69 @@ export default function FlyerPage() {
           </div>
         </div>
 
-        {/* ── Referral stats ── */}
+        {/* ── No-pyramid clarity ── */}
+        <div className="rounded-2xl px-5 py-4" style={{ background: "#dcfce7", border: "1.5px solid #bbf7d0" }}>
+          <p className="text-xs font-black uppercase tracking-wider mb-1 text-green-800">No pyramid. No chain commissions.</p>
+          <p className="text-xs text-green-900 leading-relaxed">
+            Every MadSquad partner earns from their <strong>own product sales</strong> only. Referral points are community recognition — not income from someone else's work. You bring someone in, they sell, they earn. Completely independent.
+          </p>
+        </div>
+
+        {/* ── Network Impact (sign-up tree — people only) ── */}
         <div className="rounded-2xl overflow-hidden" style={{ background: "#1A1200" }}>
-          <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ padding: "14px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
             <div className="flex items-center gap-2">
               <Users size={13} style={{ color: "#FF6900" }} />
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#FF6900" }}>Your Community</p>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#FF6900" }}>Your Network Impact</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-0" style={{ padding: "16px 20px 8px" }}>
+          <div style={{ padding: "16px 20px 12px" }}>
+            {/* Sign-up tree visual — people only, no money */}
+            <div className="flex flex-col items-center gap-1 mb-4">
+              {/* You */}
+              <div className="flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm"
+                  style={{ background: "#FF6900", color: "white" }}>You</div>
+                <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>1 partner</p>
+              </div>
+              {/* Arrow down */}
+              <div className="text-white/20 text-lg leading-none">↓</div>
+              {/* Wave 1: 3 */}
+              <div className="flex items-center gap-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-xs"
+                      style={{ background: "rgba(255,105,0,0.4)", color: "white" }}>P{i}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>3 new partners (wave 1)</p>
+              <div className="text-white/20 text-lg leading-none">↓</div>
+              {/* Wave 2: 9 */}
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+                  <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(255,105,0,0.2)", border: "1px solid rgba(255,105,0,0.4)" }}>
+                    <span className="text-[8px] text-white">👤</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>9 more partners (wave 2)</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-0" style={{ padding: "0 20px 8px" }}>
             {[
-              { label: "Total", value: totalReferrals },
-              { label: "Buyers", value: referrals.filter((r) => r.type === "buyer").length },
-              { label: "Sellers", value: referrals.filter((r) => r.type === "seller").length },
+              { label: "Partners brought in", value: referrals.filter((r) => r.type === "seller").length },
+              { label: "Buyers reached", value: referrals.filter((r) => r.type === "buyer").length },
+              { label: "Total connections", value: totalReferrals },
             ].map(({ label, value }) => (
               <div key={label} className="text-center">
                 <p className="text-white font-black text-2xl">{value}</p>
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</p>
+                <p className="text-[10px] leading-tight" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</p>
               </div>
             ))}
           </div>
-          <div style={{ background: "rgba(255,255,255,0.05)", margin: "0 20px 16px", borderRadius: 12, padding: "10px 16px" }}>
+          <div style={{ background: "rgba(255,255,255,0.05)", margin: "8px 20px 16px", borderRadius: 12, padding: "10px 16px" }}>
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>Community recognition points</p>
               <p className="font-black text-sm" style={{ color: "#FF6900" }}>+{referralPoints} pts</p>

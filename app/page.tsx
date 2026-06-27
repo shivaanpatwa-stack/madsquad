@@ -174,6 +174,61 @@ function TodaysMission() {
   );
 }
 
+// ── Monthly ₹1,000 Target ─────────────────────────────────────────────────────
+function MonthlyTarget({ sales }: { sales: SaleRecord[] }) {
+  const TARGET = 1000;
+  const monthlyValue = useMemo(
+    () => sales
+      .filter(s => { const d = new Date(s.timestamp); return d.getFullYear() === 2026 && d.getMonth() === 5; })
+      .reduce((sum, s) => sum + s.value, 0),
+    [sales]
+  );
+  const pct = Math.min(100, Math.round((monthlyValue / TARGET) * 100));
+  const hit = monthlyValue >= TARGET;
+  const r = 30;
+  const circ = 2 * Math.PI * r;
+  const filled = (pct / 100) * circ;
+  const color = hit ? "#22c55e" : "#FF6900";
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: `1.5px solid ${hit ? "#22c55e" : "#F0E6D8"}` }}>
+      <div style={{ padding: "12px 20px 10px", background: hit ? "#f0fdf4" : "#FFF8F0", borderBottom: "1px solid #F0E6D8" }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color }}>
+          Monthly Target · June 2026
+        </p>
+      </div>
+      <div className="flex items-center gap-4" style={{ padding: "14px 20px 16px" }}>
+        <svg viewBox="0 0 76 76" style={{ width: 76, height: 76, flexShrink: 0 }}>
+          <circle cx="38" cy="38" r={r} fill="none" stroke="#F0E6D8" strokeWidth="8" />
+          <circle cx="38" cy="38" r={r} fill="none" stroke={color} strokeWidth="8"
+            strokeDasharray={`${filled} ${circ}`} strokeLinecap="round"
+            transform="rotate(-90 38 38)" style={{ transition: "stroke-dasharray 1s ease" }} />
+          <text x="38" y="34" textAnchor="middle" fill={color} fontSize="14" fontWeight="900">{pct}%</text>
+          <text x="38" y="47" textAnchor="middle" fill="#9C8870" fontSize="6">of goal</text>
+        </svg>
+        <div className="flex-1">
+          {hit ? (
+            <>
+              <p className="font-black text-base" style={{ color: "#22c55e" }}>Target hit! 🎉</p>
+              <p className="text-sm mt-0.5 font-bold" style={{ color: "#1A1200" }}>₹{monthlyValue.toLocaleString("en-IN")} earned</p>
+              <p className="text-xs mt-1" style={{ color: "#6B5B45" }}>You're powering MadMix's growth.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: "#9C8870" }}>Your target</p>
+              <p className="font-black text-lg leading-tight" style={{ color: "#1A1200" }}>₹1,000 this month</p>
+              <p className="text-sm font-bold mt-1" style={{ color }}>₹{monthlyValue.toLocaleString("en-IN")} so far</p>
+              <p className="text-[10px] mt-1" style={{ color: "#9C8870" }}>
+                {Math.ceil((TARGET - monthlyValue) / 10)} more packs · Your AI plan gets you there.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Journey progress (compact) ────────────────────────────────────────────────
 function JourneyBar({ totalUnits }: { totalUnits: number }) {
   const idx = totalUnits >= 35 ? 2 : totalUnits >= FIRST_WIN_TARGET ? 1 : 0;
@@ -216,6 +271,44 @@ function JourneyBar({ totalUnits }: { totalUnits: number }) {
           Full scale reached — you&apos;re a Territory Captain candidate 🏆
         </p>
       )}
+    </div>
+  );
+}
+
+// ── How MadSquad Works ───────────────────────────────────────────────────────
+function HowItWorks() {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid #F0E6D8" }}>
+      <div style={{ padding: "14px 20px 10px", borderBottom: "1px solid #F0E6D8", background: "#1A1200" }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#FF6900" }}>How MadSquad Works</p>
+      </div>
+      <div style={{ padding: "16px 20px" }}>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          {[
+            { icon: "🏭", title: "The Brand", sub: "MadMix", desc: "Supplies product, brand assets & stock", color: "#FF6900" },
+            { icon: "📱", title: "The App", sub: "MadSquad", desc: "Connects · equips · tracks · rewards · AI guidance", color: "#7C3AED" },
+            { icon: "🤝", title: "You", sub: "Partner", desc: "Sells · earns · grows in your area", color: "#22c55e" },
+          ].map((item, i) => (
+            <div key={i}>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-2"
+                style={{ background: `${item.color}18` }}>
+                {item.icon}
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: item.color }}>{item.title}</p>
+              <p className="text-xs font-bold mt-0.5" style={{ color: "#1A1200" }}>{item.sub}</p>
+              <p className="text-[9px] mt-1 leading-snug" style={{ color: "#9C8870" }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-2 mt-3">
+          <div className="flex-1 h-px" style={{ background: "#F0E6D8" }} />
+          <span className="text-[10px]" style={{ color: "#9C8870" }}>↔</span>
+          <div className="flex-1 h-px" style={{ background: "#F0E6D8" }} />
+        </div>
+        <p className="text-[10px] text-center mt-2 leading-relaxed" style={{ color: "#6B5B45" }}>
+          MadSquad connects MadMix directly to you — order stock, get your plan, track sales, earn rewards. No middlemen, no complexity.
+        </p>
+      </div>
     </div>
   );
 }
@@ -353,6 +446,9 @@ export default function HomePage() {
           {/* 4 — First Win */}
           <FirstWinBar sales={mySales} />
 
+          {/* 4b — Monthly Target */}
+          <MonthlyTarget sales={mySales} />
+
           {/* 5 — Today's mission */}
           <TodaysMission />
 
@@ -361,6 +457,9 @@ export default function HomePage() {
 
           {/* 7 — Quick nav */}
           <QuickNav />
+
+          {/* 7b — How MadSquad Works */}
+          <HowItWorks />
 
           {/* 8 — AI mentor card */}
           <button

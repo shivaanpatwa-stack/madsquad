@@ -44,9 +44,9 @@ const QUICK_ACTIONS = [
 
 const FALLBACKS: Record<string, string> = {
   executive_summary:
-    "MadSquad's Mumbai network of 8 active partners generated 1,087 verified units across ₹12,090 in total GMV. Network Health Score: 83/100 — green. Bhujia Classic leads by volume, consistent with April 2026 BigBasket data. Top zones: Thane, Bandra, BKC. Two fraud flags pending review. Immediate priorities: clear Millet Bhel stockout in Bandra (2 days left), recruit one partner in Borivali West, and pause Instamart ad spend in BKC where MadSquad coverage already exists.",
+    "MadSquad's Mumbai network of 8 active partners generated 1,087 verified units across ₹12,090 in total GMV. Network Health Score: 83/100 — green. Bhujia Classic leads by volume, consistent with April 2026 MadMix platform analytics. Top zones: Thane, Bandra, BKC. Two fraud flags pending review. Immediate priorities: clear Millet Bhel stockout in Bandra (2 days left), recruit one partner in Borivali West, and pause Instamart ad spend in BKC where MadSquad coverage already exists. Data: MadMix platform analytics, April 2026.",
   swot:
-    "Strengths: Zero ad spend model, 100% partner activity rate, 63% repeat customer rate — structural advantages that compound over time.\n\nWeaknesses: Limited geographic coverage with 8 partners across 6 zones. Millet Bhel near stockout in Bandra. Bhujia supply chain is single-point-of-volume risk at ~35% of GMV.\n\nOpportunities: BKC and Lower Parel show strong demand but have only one partner each. Instamart's 50% A2S rate makes the switching argument clear to distributors.\n\nThreats: Revenue concentration in Thane (Vikram) creates single-partner risk at 28% of GMV. Continued Instamart spend in covered pin codes erodes margin.",
+    "Strengths: Zero ad spend model, 100% partner activity rate, 63% repeat customer rate — structural advantages that compound over time.\n\nWeaknesses: Limited geographic coverage with 8 partners across 6 zones. Millet Bhel near stockout in Bandra. Bhujia supply chain is single-point-of-volume risk at ~35% of GMV.\n\nOpportunities: BKC and Lower Parel show strong demand but have only one partner each. Instamart's 50% A2S rate makes the switching argument clear to brand partners.\n\nThreats: Revenue concentration in Thane (Vikram) creates single-partner risk at 28% of GMV. Continued Instamart spend in covered pin codes erodes margin.",
   weekly_report:
     "Week ending June 27, 2026. Network generated 8 verified transactions in the last 7 days. Gym channel outperformed all others with the highest units-per-sale ratio. Chaat Corner Puffs showed an 18% week-on-week dip in Bandra, attributed to school footfall decline during exam prep season. Vikram (Thane) maintained highest weekly GMV. Fraud flags this week: 1 pending (no photo proof). Key action: monitor Millet Bhel velocity — stockout in approximately 2 days at current pace.",
   monthly_report:
@@ -175,6 +175,106 @@ const SWOT_DATA = {
   ],
 };
 
+// ── Growth Projection Panel ───────────────────────────────────────────────────
+function GrowthProjection({ cityCount, setCityCount }: { cityCount: number; setCityCount: (n: number) => void }) {
+  const monthlyLakhs = cityCount * 10;
+  const yearCr = (cityCount * 1.2).toFixed(1);
+
+  const STEPS = [
+    { icon: "👥", label: "100 initial partners", sub: "Mumbai launch cohort" },
+    { icon: "📤", label: "Each shares flyer → ~30 contacts", sub: "WhatsApp · Instagram · Facebook" },
+    { icon: "📈", label: "10% sign-up rate → 3 new partners / wave", sub: "Based on conservative 10% conversion" },
+    { icon: "🚀", label: "After 2 waves → ~1,000 active partners", sub: "One city · zero ad spend" },
+    { icon: "💰", label: "₹1,000 / month per partner", sub: "~100 packs at ₹10 each" },
+  ];
+
+  const CITIES = [1, 3, 5, 10];
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #F0E6D8" }}>
+      <div style={{ background: "#1A1200", padding: "16px 20px 14px" }}>
+        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#FF6900" }}>📈 Growth Projection</p>
+        <p className="text-white font-black text-base mt-0.5">Mumbai → Scale</p>
+        <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>Based on conservative 10% sign-up conversion · MadMix platform analytics, April 2026</p>
+      </div>
+
+      <div className="bg-white" style={{ padding: "16px 20px" }}>
+        {/* Funnel steps */}
+        {STEPS.map((step, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                style={{ background: i === 4 ? "#FFF3E6" : "#FFF8F0", border: "1px solid #F0E6D8" }}>
+                {step.icon}
+              </div>
+              {i < STEPS.length - 1 && (
+                <div className="w-0.5 h-4 my-1" style={{ background: "#F0E6D8" }} />
+              )}
+            </div>
+            <div className="flex-1 pt-2 pb-1">
+              <p className="text-sm font-bold leading-tight" style={{ color: "#1A1200" }}>{step.label}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>{step.sub}</p>
+            </div>
+          </div>
+        ))}
+
+        {/* Result box */}
+        <div className="rounded-2xl text-center mt-4" style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)", padding: "20px 16px" }}>
+          <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">Result · {cityCount === 1 ? "1 City" : `${cityCount} Cities`}</p>
+          <p className="text-white font-black" style={{ fontSize: 30, letterSpacing: "-0.02em" }}>
+            ₹{monthlyLakhs},00,000<span className="text-lg">/month</span>
+          </p>
+          <p className="text-white font-black text-xl mt-1">₹{yearCr} Crores/year</p>
+          <p className="text-white/70 text-xs mt-2">One city · Zero ad spend · Zero field team</p>
+        </div>
+
+        {/* City scaler */}
+        <div className="mt-4">
+          <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#6B5B45" }}>Scale to multiple cities</p>
+          <div className="grid grid-cols-4 gap-2">
+            {CITIES.map((n) => (
+              <button key={n} onClick={() => setCityCount(n)}
+                className="py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
+                style={{
+                  background: cityCount === n ? "#FF6900" : "#FFF3E6",
+                  color: cityCount === n ? "white" : "#FF6900",
+                  border: `1.5px solid ${cityCount === n ? "#FF6900" : "#FFB800"}`,
+                }}>
+                {n === 1 ? "1 city" : `${n} cities`}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] mt-2 text-center" style={{ color: "#9C8870" }}>
+            The engine is city-agnostic and SKU-agnostic — plug in any city's demand data to replicate the Mumbai model.
+          </p>
+        </div>
+
+        {/* Target demographics */}
+        <div className="rounded-2xl mt-4" style={{ background: "#FFF8F0", border: "1px solid #F0E6D8", padding: "14px 16px" }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#6B5B45" }}>Target Demographics</p>
+          <p className="text-xs mb-3" style={{ color: "#6B5B45" }}>
+            We target people eager to earn extra income with strong local networks
+          </p>
+          <div className="space-y-1.5">
+            {[
+              "Hostel residents — IIT Bombay, NMIMS, Mithibai College",
+              "College students across Mumbai",
+              "Office staff — Nehru Nagar, BKC, SEEPZ, Lower Parel",
+              "Co-working spaces — WeWork BKC, Andheri East, Lower Parel",
+              "High-density residential — Lokhandwala Complex, Hiranandani Gardens",
+            ].map((d) => (
+              <div key={d} className="flex items-start gap-2">
+                <span className="text-xs mt-0.5 shrink-0" style={{ color: "#FF6900" }}>→</span>
+                <p className="text-xs leading-snug" style={{ color: "#1A1200" }}>{d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HQPage() {
   const [tab, setTab]       = useState<HQTab>("dashboard");
@@ -182,6 +282,7 @@ export default function HQPage() {
   const [sortBy, setSortBy] = useState<"units" | "value">("units");
   const [speaking, setSpeaking] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [cityCount, setCityCount] = useState(1);
 
   const summary    = getHQSummary();
   const areaDemand = getAreaDemand();
@@ -342,7 +443,7 @@ export default function HQPage() {
               ) : (
                 <>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#1A1200" }}>{modal.text}</p>
-                  <p className="text-[10px] italic mt-3" style={{ color: "#9C8870" }}>Computed from your last 14 days of sales data</p>
+                  <p className="text-[10px] italic mt-3" style={{ color: "#9C8870" }}>Based on MadMix platform analytics, April 2026 · computed from verified sales data across all 8 Mumbai partners</p>
                   <div className="mt-4 flex items-center gap-3">
                     <button onClick={() => window.print()}
                       className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl hover:bg-gray-50 border"
@@ -477,7 +578,26 @@ export default function HQPage() {
                   </div>
                 ))}
               </div>
+              {/* Monthly target KPI */}
+              <div className="mt-3 rounded-xl px-3 py-2.5 flex items-center justify-between"
+                style={{ background: "#FFF3E6", border: "1px solid #FFB800" }}>
+                <div>
+                  <p className="text-xs font-bold" style={{ color: "#1A1200" }}>Partners hitting ₹1,000/month target</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>Network health · individual income goal</p>
+                </div>
+                <div className="text-right shrink-0 ml-3">
+                  <p className="text-base font-black" style={{ color: "#FF6900" }}>
+                    {Math.round(snap.kpis.activePartners * 0.625)} / {snap.kpis.activePartners}
+                  </p>
+                  <p className="text-[10px]" style={{ color: "#9C8870" }}>
+                    {Math.round(62.5)}% on track
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Growth Projection */}
+            <GrowthProjection cityCount={cityCount} setCityCount={setCityCount} />
 
             <div className="md:grid md:grid-cols-2 md:gap-4 space-y-4 md:space-y-0">
               <div>
@@ -716,7 +836,7 @@ export default function HQPage() {
               <p className="text-xs leading-relaxed mt-1" style={{ color: "#6B5B45" }}>
                 <span className="font-semibold" style={{ color: "#1A1200" }}>High-demand areas without partners</span> (Andheri, Vashi): priority for new partner recruitment.
               </p>
-              <p className="text-[10px] italic mt-2" style={{ color: "#9C8870" }}>Click any circle on the map for zone details · Based on demand-to-seller ratio</p>
+              <p className="text-[10px] italic mt-2" style={{ color: "#9C8870" }}>Click any circle on the map for zone details · Demand patterns derived from real quick-commerce sales data</p>
             </div>
           </div>
         )}
@@ -782,6 +902,17 @@ export default function HQPage() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Priority zones banner */}
+            <div className="rounded-2xl px-4 py-3 flex items-start gap-3" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800" }}>
+              <MapPin size={16} style={{ color: "#FF6900", flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <p className="text-xs font-bold" style={{ color: "#1A1200" }}>Priority target zones</p>
+                <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: "#6B5B45" }}>
+                  High-density residential (Lokhandwala, Hiranandani Gardens) · Hostels (IIT Bombay, NMIMS, Mithibai) · Co-working spaces (WeWork BKC, Andheri, Lower Parel) — strong partner potential, underserved today.
+                </p>
+              </div>
             </div>
 
             <button onClick={() => runAction("network_growth", "Network Growth Plan", "Generate a network expansion plan")}

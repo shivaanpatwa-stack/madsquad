@@ -40,7 +40,7 @@ type Perk = {
 };
 
 const PERKS: Perk[] = [
-  { id: "p-1", emoji: "📦",   name: "Standard Consignment",    desc: "Starter packs at distributor pricing.",                 tier: "Nibbler",    detail: "50 packs · ₹500 cost · ₹10 sell price"  },
+  { id: "p-1", emoji: "📦",   name: "Standard Consignment",    desc: "Starter packs at partner pricing.",                 tier: "Nibbler",    detail: "50 packs · ₹500 cost · ₹10 sell price"  },
   { id: "p-2", emoji: "🌟",   name: "Early Flavour Access",    desc: "Try new flavours 2 weeks before general launch.",       tier: "Muncher",    detail: "New flavour samples shipped directly"     },
   { id: "p-3", emoji: "📦+",  name: "10% Bigger Consignment",  desc: "More stock per order — better coverage for your zone.", tier: "Muncher",    detail: "55 packs at same ₹500 cost"              },
   { id: "p-4", emoji: "⚡",   name: "Priority Delivery",       desc: "Your reorders ship before standard partners.",          tier: "Crusher",    detail: "2–3 day turnaround vs 5–7 standard"       },

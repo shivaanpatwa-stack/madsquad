@@ -116,20 +116,20 @@ const LESSONS: Lesson[] = [
   {
     id: "lesson-5",
     num: 5,
-    title: "How to Sell MadMix",
-    subtitle: "A simple, repeatable approach",
+    title: "Match Product to Person",
+    subtitle: "Brand knowledge in action — not marketing tricks",
     emoji: "💪",
     duration: "4 min",
     gradient: "linear-gradient(135deg, #DC2626 0%, #FF6900 100%)",
     textOnGrad: "white",
     points: 40,
-    intro: "Selling MadMix is simple: the right product, the right crowd, the right line. Here's the formula that works.",
+    intro: "You know the brand. Now use that knowledge: match the right MadMix product to the right person. That's it. No tricks — just genuine understanding of what you're selling.",
     takeaways: [
-      { icon: "👟", text: "Gym crowd: spicy puffs, pre/post workout. Pitch: 'healthy snack, baked not fried, ₹10 only.'" },
-      { icon: "🏢", text: "Office crowd: Bhujia or Raisins, tea-time. Pitch: 'light, tasty, won't make you feel heavy.'" },
-      { icon: "🎒", text: "College students: variety packs, anything spicy. Pitch: 'new flavour, try karo sirf dus mein.'" },
-      { icon: "🗣️", text: "Lead with TASTE first, health second. Don't open with calories — open with 'yeh bahut tasty hai.'" },
-      { icon: "🔄", text: "Consistency beats hustle. Same spot, same time, same face = repeat buyers who look for you." },
+      { icon: "👟", text: "Gym crowd → Baked Millet Puffs (Flamin' Fun, Mighty Masala). Their need: tasty post-workout snack. Your brand knowledge does the talking." },
+      { icon: "🏢", text: "Office crowd → Bhujia or Raisins at tea-time. Their need: light, not heavy. MadMix fits perfectly." },
+      { icon: "🎒", text: "College students → any spicy puff. Their need: something new and affordable. ₹10 is an easy yes." },
+      { icon: "🗣️", text: "Lead with TASTE, then health — open with 'yeh bahut tasty hai' not calories. The product story lands naturally." },
+      { icon: "🔄", text: "Consistency builds trust. Same spot, same time, same face = repeat buyers who seek you out." },
     ],
     quiz: {
       question: "What's the best opening line when approaching gym-goers?",
@@ -463,8 +463,11 @@ export default function AcademyPage() {
               MadMix Academy
             </p>
             <h1 className="text-white font-black leading-tight" style={{ fontSize: 26, letterSpacing: "-0.01em" }}>
-              Know your brand.<br />Sell with confidence.
+              Know the MadMix story.
             </h1>
+            <p className="text-xs mt-2 leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
+              The best partners don&apos;t learn marketing tricks — they learn the brand and let it sell itself.
+            </p>
           </div>
           {academyCertified && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl shrink-0"
