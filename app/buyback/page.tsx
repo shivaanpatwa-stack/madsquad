@@ -3,13 +3,11 @@ import { useState } from "react";
 import { useApp } from "@/store/AppContext";
 import { Shield, CheckCircle, Clock, Package, ArrowRight, X } from "lucide-react";
 
-const PACKAGE_COST = 500;
 const START_DATE = new Date("2026-06-22");
 const TODAY = new Date("2026-06-27");
 const DAYS_IN = Math.round((TODAY.getTime() - START_DATE.getTime()) / 86400000);
-const DAYS_LEFT = Math.max(0, 7 - DAYS_IN);
 const GUARANTEE_DEADLINE = new Date(START_DATE);
-GUARANTEE_DEADLINE.setDate(GUARANTEE_DEADLINE.getDate() + 7);
+GUARANTEE_DEADLINE.setDate(GUARANTEE_DEADLINE.getDate() + 14);
 
 function fmt(d: Date) {
   return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -17,7 +15,9 @@ function fmt(d: Date) {
 
 export default function BuyBackPage() {
   const { state, requestBuyBack } = useApp();
-  const { sales, buyBackRequested } = state;
+  const { sales, buyBackRequested, starterPackage } = state;
+  const PACKAGE_COST = starterPackage;
+  const DAYS_LEFT = Math.max(0, 14 - DAYS_IN);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
@@ -51,7 +51,7 @@ export default function BuyBackPage() {
           Your investment,<br />protected.
         </h1>
         <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-          MadMix buys back unsold stock if you don&apos;t recoup in 7 days
+          MadMix buys back unsold stock if you don&apos;t recoup in 14 days
         </p>
       </div>
 
@@ -122,7 +122,7 @@ export default function BuyBackPage() {
           {[
             { day: "Day 1", label: "Starter pack delivered", date: fmt(START_DATE), done: true },
             { day: `Day ${DAYS_IN}`, label: "Today", date: fmt(TODAY), done: true, current: true },
-            { day: "Day 7", label: "Guarantee deadline", date: fmt(GUARANTEE_DEADLINE), done: DAYS_LEFT <= 0 },
+            { day: "Day 14", label: "Guarantee deadline", date: fmt(GUARANTEE_DEADLINE), done: DAYS_LEFT <= 0 },
           ].map(({ day, label, date, done, current }) => (
             <div key={day} className="flex items-center gap-4 px-5 py-3.5" style={{ borderBottom: "1px solid #F8F0E8" }}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
@@ -177,7 +177,7 @@ export default function BuyBackPage() {
           </div>
           {[
             { icon: Package, text: "You receive a starter pack (₹500 value)" },
-            { icon: Clock, text: "You have 7 days to recover your investment through sales" },
+            { icon: Clock, text: "You have 14 days to recover your investment through sales" },
             { icon: Shield, text: "If you haven&apos;t fully recovered, MadMix buys back unsold stock at cost" },
             { icon: CheckCircle, text: "No questions asked — request below and receive within 3–5 days" },
           ].map(({ icon: Icon, text }, i) => (
@@ -205,7 +205,7 @@ export default function BuyBackPage() {
             }}
             disabled={!eligible}
           >
-            {eligible ? `Request Buy-Back · ₹${unsoldValue} →` : `Available from Day 5 onwards · ${DAYS_LEFT}d left`}
+            {eligible ? `Request Buy-Back · ₹${unsoldValue} →` : `Available from Day 11 onwards · ${DAYS_LEFT}d left`}
           </button>
         )}
 

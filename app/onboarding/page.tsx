@@ -11,23 +11,29 @@ import GuaranteeBadge from "@/components/ui/GuaranteeBadge";
 
 type Screen = "welcome" | "package" | "details" | "plan" | "done";
 
+// 50% consignment model: pay X upfront, get 1.5X product, owe 0.5X after selling
+// Buy-back covers the deferred amount if you can't sell it all in 14 days
 const PACKAGES: {
-  value: 100 | 500 | 1000;
+  value: 500 | 1000 | 2000 | 5000;
   label: string;
-  packs: number;
-  earn: string;
+  packs: number;           // total packs received (at ₹10 each)
+  productValue: number;    // total product value = packs × 10
+  upfront: number;         // what you pay today
+  deferred: number;        // pay later from sales (OR return unsold stock)
+  earn: string;            // revenue if sold fully
   tag?: string;
   desc: string;
 }[] = [
-  { value: 100,  label: "₹100",  packs: 10,  earn: "₹100", desc: "Starter",   tag: undefined           },
-  { value: 500,  label: "₹500",  packs: 50,  earn: "₹500", desc: "Hustler",   tag: "Most Popular"      },
-  { value: 1000, label: "₹1000", packs: 100, earn: "₹1,000", desc: "Pro",     tag: undefined           },
+  { value: 500,  label: "₹500",  packs: 75,  productValue: 750,  upfront: 500,  deferred: 250,  earn: "₹750",   desc: "Starter",     tag: undefined        },
+  { value: 1000, label: "₹1,000", packs: 150, productValue: 1500, upfront: 1000, deferred: 500,  earn: "₹1,500", desc: "Hustler",     tag: "Most Popular"   },
+  { value: 2000, label: "₹2,000", packs: 300, productValue: 3000, upfront: 2000, deferred: 1000, earn: "₹3,000", desc: "Pro",         tag: undefined        },
+  { value: 5000, label: "₹5,000", packs: 750, productValue: 7500, upfront: 5000, deferred: 2500, earn: "₹7,500", desc: "Captain",     tag: "Best Value"     },
 ];
 
 const HOURS_OPTIONS = ["2-5 hrs/week", "5-10 hrs/week", "10+ hrs/week"];
 
 // ── Gemini plan prompt ─────────────────────────────────────────────────────
-const buildPlanSystem = () => `You are the MadSquad Plan Engine. A new Indian snack distributor just signed up. Using their package size, location, accessible channels, and hours, plus nearby demand and seller-coverage data provided, generate a specific, encouraging 7-day starting plan. Output exactly 5 labeled sections on separate lines:
+const buildPlanSystem = () => `You are the MadSquad Plan Engine. A new Indian snack distributor just signed up. Using their package size, location, accessible channels, and hours, plus nearby demand and seller-coverage data provided, generate a specific, encouraging 14-day starting plan. Output exactly 5 labeled sections on separate lines:
 FIRST_MISSION: [exact venue type + area + SKU + time window + 1-2 line casual Hinglish sales script]
 SEVEN_DAY_TARGET: [number of packs and what winning looks like]
 YOUR_TERRITORY: [assigned low-saturation zone + a positive reason]
@@ -36,9 +42,10 @@ FIRST_MILESTONE: [what to hit, the reward, and an encouraging line]
 Be specific, confident, and supportive. Never generic. Use the numbers provided. Do not mention failure, quitting, or risk statistics — keep it positive and action-focused.`;
 
 const buildPlanPrompt = (pkg: number, details: OnboardingDetails) => {
+  const pkgData = PACKAGES.find((p) => p.value === pkg) ?? PACKAGES[1];
   const venueList = getVenueListString(details.area, details.channels);
   return `New seller details:
-- Package: ₹${pkg} (~${pkg / 10} packs at ₹10 each)
+- Package: ₹${pkg} upfront (receives ${pkgData.packs} packs at ₹10 each — worth ₹${pkgData.productValue}; 50% consignment model)
 - Name: ${details.name}
 - Area: ${details.area}
 - Channels: ${details.channels.join(", ")}
@@ -46,17 +53,17 @@ const buildPlanPrompt = (pkg: number, details: OnboardingDetails) => {
 - Verified venues in ${details.area} matched to their channels: ${venueList}
 - CRITICAL: Recommend ONLY venues from the list above — no generic placeholders
 - Seller coverage: Low saturation in ${details.area} — room to grow
-- First Win target: ${Math.round(pkg / 10 * 0.2)} packs (first milestone)
-- 7-day target: ${Math.round(pkg / 10)} packs
+- First Win target: ${Math.round(pkgData.packs * 0.2)} packs (first milestone)
+- 14-day target: ${pkgData.packs} packs total
 
 Generate the plan now using the exact venue names listed above.`;
 };
 
 const FALLBACK_PLAN = `FIRST_MISSION: Gold's Gym Andheri West — sell Flamin' Fun Puffs Mini (₹10) between 7–9 AM. Script: "Bhai, pre-workout snack try kar — MadMix ka naya puff hai, sirf dus rupaye!"
-SEVEN_DAY_TARGET: Sell 50 packs in 7 days. That's your full starter stock out the door and ₹500 in your pocket.
+SEVEN_DAY_TARGET: Sell 150 packs in 14 days. That's your full starter stock out the door and ₹1,500 in your pocket.
 YOUR_TERRITORY: Andheri is yours — strong gym and college demand, and low MadSquad seller coverage right now. You're first mover here.
 WHAT_TO_STOCK: Lead with Flamin' Fun Puffs Mini — proven gym seller. Add Mighty Masala Bhujia Mini for SEEPZ Office Park. Both at ₹10, easy impulse buy.
-FIRST_MILESTONE: Sell your first 10 packs to earn your First Win badge + 50 bonus points + ₹100 back on your starter. Aaj pehle 10 nikaalo!`;
+FIRST_MILESTONE: Sell your first 30 packs to earn your First Win badge + 50 bonus points. Aaj pehle 30 nikaalo!`;
 
 type PlanSection = { label: string; icon: typeof MapPin; value: string };
 
@@ -67,7 +74,7 @@ function parsePlan(text: string): PlanSection[] {
   };
   return [
     { label: "YOUR FIRST MISSION",    icon: Zap,     value: extract("FIRST_MISSION")   },
-    { label: "7-DAY TARGET",          icon: Target,  value: extract("SEVEN_DAY_TARGET") },
+    { label: "14-DAY TARGET",          icon: Target,  value: extract("SEVEN_DAY_TARGET") },
     { label: "YOUR TERRITORY",        icon: MapPin,  value: extract("YOUR_TERRITORY")   },
     { label: "WHAT TO STOCK",         icon: Package, value: extract("WHAT_TO_STOCK")    },
     { label: "YOUR FIRST MILESTONE",  icon: CheckCircle, value: extract("FIRST_MILESTONE") },
@@ -82,7 +89,7 @@ function WelcomeScreen({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
       iconBg: "#FFF3E6",
       iconColor: "#FF6900",
       title: "Risk-free start",
-      body: "Sell your starter pack in 7 days, or MadMix buys it back. Your investment is always protected.",
+      body: "Sell your starter pack in 14 days, or MadMix buys it back. Your investment is always protected.",
     },
     {
       Icon: Target,
@@ -203,8 +210,8 @@ function WelcomeScreen({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
 function PackageScreen({
   selected, onSelect, onNext, onBack,
 }: {
-  selected: 100 | 500 | 1000;
-  onSelect: (v: 100 | 500 | 1000) => void;
+  selected: 500 | 1000 | 2000 | 5000;
+  onSelect: (v: 500 | 1000 | 2000 | 5000) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
@@ -231,7 +238,7 @@ function PackageScreen({
           Pick your starter pack.
         </h1>
         <p className="text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>
-          Can't sell it all in 7 days? We buy it back. Every rupee protected.
+          Can't sell it all in 14 days? We buy it back. Every rupee protected.
         </p>
       </div>
 
@@ -242,7 +249,7 @@ function PackageScreen({
           <div>
             <p className="text-xs font-bold" style={{ color: "#1A1200" }}>How the buy-back works</p>
             <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#6B5B45" }}>
-              Sell within 7 days → keep everything. Can't sell in 7 days → MadMix refunds your pack at cost. No questions asked.
+              Sell within 14 days → keep everything. Can't sell in 14 days → MadMix refunds your pack at cost. No questions asked.
             </p>
           </div>
         </div>
@@ -250,7 +257,7 @@ function PackageScreen({
 
       {/* ── Package cards ── */}
       <div className="px-4 pt-5 pb-2 space-y-3 flex-1">
-        {PACKAGES.map(({ value, label, packs, earn, desc, tag }) => {
+        {PACKAGES.map(({ value, label, packs, productValue, upfront, deferred, earn, desc, tag }) => {
           const isSelected = selected === value;
           return (
             <button
@@ -279,27 +286,45 @@ function PackageScreen({
 
               {/* Card body */}
               <div className="px-4 py-3 bg-white">
-                <div className="flex items-center gap-6">
+                {/* Main stats row */}
+                <div className="flex items-center gap-4 mb-3">
                   <div className="text-center">
                     <p className="text-lg font-black" style={{ color: "#1A1200" }}>{packs}</p>
                     <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>packs</p>
                   </div>
                   <div className="w-px h-8" style={{ background: "#F0E6D8" }} />
                   <div className="text-center">
-                    <p className="text-lg font-black" style={{ color: "#FF6900" }}>₹10</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>per pack</p>
+                    <p className="text-lg font-black" style={{ color: "#FF6900" }}>₹{productValue.toLocaleString("en-IN")}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>total product</p>
                   </div>
                   <div className="w-px h-8" style={{ background: "#F0E6D8" }} />
                   <div className="text-center">
                     <p className="text-lg font-black" style={{ color: "#22c55e" }}>{earn}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>if you sell all</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>revenue</p>
+                  </div>
+                </div>
+
+                {/* Consignment breakdown */}
+                <div className="rounded-xl px-3 py-2.5 flex items-center gap-2"
+                  style={{ background: "#FFF8F0", border: "1px solid #F0E6D8" }}>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold" style={{ color: "#FF6900" }}>
+                      Pay {label} today
+                    </p>
+                    <p className="text-[10px]" style={{ color: "#9C8870" }}>
+                      + ₹{deferred.toLocaleString("en-IN")} after selling · or return unsold stock
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] font-black" style={{ color: "#22c55e" }}>50% consignment</p>
+                    <p className="text-[10px]" style={{ color: "#9C8870" }}>buy-back protected</p>
                   </div>
                 </div>
 
                 {isSelected && (
                   <div className="flex items-center gap-1.5 mt-3 pt-3" style={{ borderTop: "1px solid #F0E6D8" }}>
                     <CheckCircle size={13} style={{ color: "#FF6900" }} />
-                    <span className="text-xs font-bold" style={{ color: "#FF6900" }}>Selected · Buy-back active on this pack</span>
+                    <span className="text-xs font-bold" style={{ color: "#FF6900" }}>Selected · 14-day buy-back guarantee active</span>
                   </div>
                 )}
               </div>
@@ -308,25 +333,35 @@ function PackageScreen({
         })}
       </div>
 
-      {/* ── Projection card when a package is selected ── */}
+      {/* ── Projection card ── */}
       <div className="mx-4 mb-5">
         <div className="rounded-2xl p-4" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800" }}>
-          <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "#FF6900" }}>
-            What this looks like for you
+          <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: "#FF6900" }}>
+            Your deal breakdown
           </p>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             <div className="text-center">
-              <p className="text-base font-black" style={{ color: "#1A1200" }}>{selPkg.packs}</p>
-              <p className="text-[10px]" style={{ color: "#9C8870" }}>packs to sell</p>
+              <p className="text-sm font-black" style={{ color: "#1A1200" }}>{selPkg.packs}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: "#9C8870" }}>packs</p>
             </div>
             <div className="text-center">
-              <p className="text-base font-black" style={{ color: "#FF6900" }}>7 days</p>
-              <p className="text-[10px]" style={{ color: "#9C8870" }}>to First Win</p>
+              <p className="text-sm font-black" style={{ color: "#FF6900" }}>₹{selPkg.upfront.toLocaleString("en-IN")}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: "#9C8870" }}>upfront</p>
             </div>
             <div className="text-center">
-              <p className="text-base font-black" style={{ color: "#22c55e" }}>{selPkg.earn}</p>
-              <p className="text-[10px]" style={{ color: "#9C8870" }}>potential earn</p>
+              <p className="text-sm font-black" style={{ color: "#7C3AED" }}>₹{selPkg.deferred.toLocaleString("en-IN")}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: "#9C8870" }}>after sell</p>
             </div>
+            <div className="text-center">
+              <p className="text-sm font-black" style={{ color: "#22c55e" }}>{selPkg.earn}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: "#9C8870" }}>revenue</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 flex items-center gap-1.5" style={{ borderTop: "1px solid #F0D8C0" }}>
+            <Shield size={11} style={{ color: "#FF6900", flexShrink: 0 }} />
+            <p className="text-[10px]" style={{ color: "#6B5B45" }}>
+              Can&apos;t sell in 14 days? Return unsold stock — pay nothing extra.
+            </p>
           </div>
         </div>
       </div>
@@ -503,7 +538,7 @@ function PlanScreen({ plan, pkg, details, onStart }: { plan: string; pkg: number
           style={{ background: "#FFF3E6", border: "1.5px solid #FF6900" }}>
           <Shield size={14} fill="#FF6900" color="#FF6900" />
           <p className="text-xs font-bold" style={{ color: "#FF6900" }}>
-            Buy-back guarantee active · ₹{pkg} protected for 7 days
+            Buy-back guarantee active · ₹{pkg} protected for 14 days
           </p>
         </div>
       </div>
@@ -546,7 +581,7 @@ export default function OnboardingPage() {
   const { completeOnboarding, skipToDemo } = useApp();
 
   const [screen, setScreen] = useState<Screen>("welcome");
-  const [pkg, setPkg] = useState<100 | 500 | 1000>(500);
+  const [pkg, setPkg] = useState<500 | 1000 | 2000 | 5000>(1000);
   const [details, setDetails] = useState<OnboardingDetails>({
     name: "",
     area: "Andheri",

@@ -31,7 +31,7 @@ export type AppState = {
   streak: number;
   // Onboarding flow state
   onboardingComplete: boolean;
-  starterPackage: 100 | 500 | 1000;
+  starterPackage: 500 | 1000 | 2000 | 5000;
   onboardingDetails: OnboardingDetails;
   generatedPlan: string | null;
   // Academy
@@ -61,7 +61,7 @@ const initialState: AppState = {
   lastSalePoints: null,
   streak: 5,
   onboardingComplete: false,
-  starterPackage: 500,
+  starterPackage: 1000,
   onboardingDetails: {
     name: "Arjun Sharma",
     area: "Andheri",
@@ -83,7 +83,7 @@ type Action =
   | { type: "LOG_SALE"; sale: SaleRecord }
   | { type: "REDEEM_REWARD"; rewardId: string; pointsCost: number }
   | { type: "CLEAR_LAST_SALE_POINTS" }
-  | { type: "COMPLETE_ONBOARDING"; pkg: 100 | 500 | 1000; details: OnboardingDetails; plan: string | null }
+  | { type: "COMPLETE_ONBOARDING"; pkg: 500 | 1000 | 2000 | 5000; details: OnboardingDetails; plan: string | null }
   | { type: "SKIP_TO_DEMO" }
   | { type: "COMPLETE_LESSON"; lessonId: string; lessonPoints: number }
   | { type: "ADD_REFERRAL"; referral: ReferralRecord }
@@ -170,7 +170,7 @@ const AppContext = createContext<{
   logSale: (sale: SaleRecord) => void;
   redeemReward: (rewardId: string, pointsCost: number) => void;
   clearLastSalePoints: () => void;
-  completeOnboarding: (pkg: 100 | 500 | 1000, details: OnboardingDetails, plan: string | null) => void;
+  completeOnboarding: (pkg: 500 | 1000 | 2000 | 5000, details: OnboardingDetails, plan: string | null) => void;
   skipToDemo: () => void;
   completeLesson: (lessonId: string, lessonPoints: number) => void;
   addReferral: (referral: ReferralRecord) => void;
@@ -193,7 +193,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const completeOnboarding = useCallback(
-    (pkg: 100 | 500 | 1000, details: OnboardingDetails, plan: string | null) => {
+    (pkg: 500 | 1000 | 2000 | 5000, details: OnboardingDetails, plan: string | null) => {
       dispatch({ type: "COMPLETE_ONBOARDING", pkg, details, plan });
     },
     []

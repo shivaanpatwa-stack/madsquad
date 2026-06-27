@@ -17,7 +17,6 @@ const TODAY = new Date("2026-06-27");
 const START_DATE = new Date("2026-06-22");
 const DAYS_IN = Math.round((TODAY.getTime() - START_DATE.getTime()) / 86400000);
 const FIRST_WIN_TARGET = 10;
-const PACKAGE_COST = 500;
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() &&
@@ -40,14 +39,14 @@ const JOURNEY_STAGES = [
 ];
 
 // ── USP / Protection Hero ─────────────────────────────────────────────────────
-function ProtectionHero({ sales }: { sales: SaleRecord[] }) {
+function ProtectionHero({ sales, packageCost }: { sales: SaleRecord[]; packageCost: number }) {
   const recovered = useMemo(() => sales.reduce((s, r) => s + r.value, 0), [sales]);
-  const pct = Math.min(100, Math.round((recovered / PACKAGE_COST) * 100));
+  const pct = Math.min(100, Math.round((recovered / packageCost) * 100));
   const r = 34;
   const circ = 2 * Math.PI * r;
   const filled = (pct / 100) * circ;
-  const daysLeft = 7 - DAYS_IN;
-  const inProfit = recovered >= PACKAGE_COST;
+  const daysLeft = 14 - DAYS_IN;
+  const inProfit = recovered >= packageCost;
 
   if (inProfit) {
     return (
@@ -57,7 +56,7 @@ function ProtectionHero({ sales }: { sales: SaleRecord[] }) {
       }}>
         <p className="text-green-200 text-xs font-bold uppercase tracking-widest mb-3">Investment Status</p>
         <h2 className="text-white font-black text-2xl leading-tight mb-1">In Profit! 🎉</h2>
-        <p className="text-green-200 text-sm">Your ₹{PACKAGE_COST} is fully recovered. Everything from here is yours.</p>
+        <p className="text-green-200 text-sm">Your ₹{packageCost} is fully recovered. Everything from here is yours.</p>
       </div>
     );
   }
@@ -91,7 +90,7 @@ function ProtectionHero({ sales }: { sales: SaleRecord[] }) {
             <p className="text-white font-black" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
               ₹{recovered}
             </p>
-            <p className="text-white/60 text-sm mt-1">of ₹{PACKAGE_COST} recovered</p>
+            <p className="text-white/60 text-sm mt-1">of ₹{packageCost} recovered</p>
             <div className="flex items-center gap-2 mt-3">
               <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)", color: "white" }}>
                 {daysLeft}d left on guarantee
@@ -107,7 +106,7 @@ function ProtectionHero({ sales }: { sales: SaleRecord[] }) {
           <div className="h-full bg-white rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
         </div>
         <p className="text-white/70 text-xs">
-          ₹{PACKAGE_COST - recovered} more to fully recover · or MadMix buys it back
+          ₹{packageCost - recovered} more to fully recover · or MadMix buys it back
         </p>
       </div>
     </div>
@@ -285,7 +284,7 @@ export default function HomePage() {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-              {seller.area} · Day {DAYS_IN} of 7
+              {seller.area} · Day {DAYS_IN} of 14
             </p>
             <h1 className="text-white font-black" style={{ fontSize: 28, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
               Hey {seller.shortName}! 👋
@@ -317,14 +316,14 @@ export default function HomePage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* 1 — USP hero */}
-          <ProtectionHero sales={mySales} />
+          <ProtectionHero sales={mySales} packageCost={state.starterPackage} />
 
           {/* 2 — Quick stats row */}
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: "Today", value: `${todayUnits}`, sub: "packs sold" },
               { label: "Total", value: `${totalUnits}`, sub: "packs sold" },
-              { label: `Day ${DAYS_IN}`, value: "/7", sub: "First Win window" },
+              { label: `Day ${DAYS_IN}`, value: "/14", sub: "First Win window" },
             ].map(({ label, value, sub }) => (
               <div key={label} className="rounded-2xl text-center"
                 style={{ background: "white", border: "1px solid #F0E6D8", padding: "14px 8px" }}>
