@@ -2,14 +2,38 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { getSellerTerritory, getAreaSaturation } from "@/lib/territory";
-import { MapPin, TrendingUp, Users, Zap } from "lucide-react";
+import { MapPin, TrendingUp, Users, Zap, Shield } from "lucide-react";
 
 type DemoSeller = "riya" | "arjun";
 
 const STATUS_CONFIG = {
-  "white-space": { label: "White Space 🟡", bg: "#FFF3E6", color: "#FF6900", desc: "Room to grow — demand exceeds seller coverage." },
-  healthy:       { label: "Healthy 🟢",     bg: "#dcfce7", color: "#15803d", desc: "Well-covered zone. Keep the momentum." },
-  saturated:     { label: "Saturated 🔴",   bg: "#fee2e2", color: "#D62828", desc: "Adding more sellers here creates competition without new demand." },
+  "white-space": {
+    label: "White Space",
+    emoji: "🟡",
+    gradient: "linear-gradient(135deg, #FF6900 0%, #FFB800 100%)",
+    textColor: "white",
+    badgeBg: "rgba(255,255,255,0.2)",
+    badgeText: "white",
+    desc: "Room to grow — demand here exceeds how many sellers are covering it.",
+  },
+  healthy: {
+    label: "Healthy Zone",
+    emoji: "🟢",
+    gradient: "linear-gradient(135deg, #14532d 0%, #16a34a 100%)",
+    textColor: "white",
+    badgeBg: "rgba(255,255,255,0.2)",
+    badgeText: "white",
+    desc: "Well-covered zone. Keep the momentum going.",
+  },
+  saturated: {
+    label: "Saturated",
+    emoji: "🔴",
+    gradient: "linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)",
+    textColor: "white",
+    badgeBg: "rgba(255,255,255,0.2)",
+    badgeText: "white",
+    desc: "High seller density here. Nearby zones have more room to grow.",
+  },
 };
 
 export default function TerritoryPage() {
@@ -23,173 +47,146 @@ export default function TerritoryPage() {
 
   if (!territory) return null;
   const { saturation, whiteSpaceNearby } = territory;
-  const statusCfg = STATUS_CONFIG[saturation.status];
-
-  const maxDemand = Math.max(...allAreas.map((a) => a.demand), 1);
+  const cfg = STATUS_CONFIG[saturation.status];
 
   return (
-    <div className="min-h-screen md:max-w-2xl md:mx-auto" style={{ background: "#FFF8F0" }}>
-      {/* Header */}
-      <div className="px-5 pt-10 pb-5" style={{ background: "#1A1200" }}>
-        <div className="flex items-center gap-2 mb-1">
-          <MapPin size={16} style={{ color: "#FF6900" }} />
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#FF6900" }}>My Territory</p>
+    <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
+
+      {/* ── Header ── */}
+      <div style={{ background: "#1A1200", padding: "48px 20px 24px" }}>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin size={14} style={{ color: "#FF6900" }} />
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#FF6900" }}>Territory</p>
+            </div>
+            <h1 className="text-white font-black" style={{ fontSize: 26, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+              {sellerName}&apos;s Zone
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Protected patch · no-cannibalisation guarantee
+            </p>
+          </div>
+
+          {/* Demo switcher — compact, top right */}
+          <div className="flex gap-1.5 mt-1">
+            {(["arjun", "riya"] as DemoSeller[]).map((s) => (
+              <button key={s} onClick={() => setDemoSeller(s)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-xl transition-all"
+                style={{
+                  background: demoSeller === s ? "#FF6900" : "rgba(255,255,255,0.08)",
+                  color: demoSeller === s ? "white" : "rgba(255,255,255,0.4)",
+                }}>
+                {s === "arjun" ? "Arjun" : "Riya"}
+              </button>
+            ))}
+          </div>
         </div>
-        <h1 className="text-xl font-extrabold text-white">Your patch + untapped demand nearby</h1>
-        <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
-          {sellerName}'s protected zone · no-cannibalisation guarantee
-        </p>
       </div>
 
-      {/* Demo toggle */}
-      <div className="flex bg-white" style={{ borderBottom: "1px solid #F0E6D8" }}>
-        {(["riya", "arjun"] as DemoSeller[]).map((s) => (
-          <button
-            key={s}
-            onClick={() => setDemoSeller(s)}
-            className="flex-1 py-3 text-sm font-semibold capitalize transition-colors"
-            style={{
-              color: demoSeller === s ? "#FF6900" : "#9C8870",
-              borderBottom: demoSeller === s ? "2px solid #FF6900" : "2px solid transparent",
-            }}
-          >
-            {s === "riya" ? "Riya (Bandra)" : "Arjun (Andheri) — New"}
-          </button>
-        ))}
-      </div>
+      {/* ── Content ── */}
+      <div style={{ padding: "20px 16px", maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
 
-      <div className="px-4 py-5 space-y-4">
-        {/* Status card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: "1px solid #F0E6D8" }}>
-          <div className="px-4 py-3 flex items-center justify-between" style={{ background: statusCfg.bg }}>
-            <div>
-              <p className="text-xs font-bold" style={{ color: statusCfg.color }}>{statusCfg.label}</p>
-              <p className="font-extrabold text-lg" style={{ color: "#1A1200" }}>{saturation.area}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-3xl font-black" style={{ color: statusCfg.color }}>{saturation.saturationScore}</p>
-              <p className="text-[10px]" style={{ color: "#9C8870" }}>/ 100 saturation</p>
-            </div>
-          </div>
-          <div className="px-4 py-3">
-            <p className="text-xs leading-relaxed" style={{ color: "#6B5B45" }}>{statusCfg.desc}</p>
-          </div>
-        </div>
-
-        {/* Zone stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Demand (units)", value: saturation.demand, icon: TrendingUp, color: "#FF6900" },
-            { label: "Sellers here",   value: saturation.sellerCount, icon: Users, color: "#7C3AED" },
-            { label: "Top Channel",    value: saturation.topChannel,  icon: Zap,   color: "#FFB800" },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-              <Icon size={14} style={{ color }} />
-              <p className="text-sm font-black mt-1" style={{ color: "#1A1200" }}>{value}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: "#9C8870" }}>{label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Top SKU */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-          <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "#6B5B45" }}>Top SKU in zone</p>
-          <p className="text-base font-bold" style={{ color: "#1A1200" }}>{saturation.topSku || "No data yet"}</p>
-          {saturation.demand === 0 && (
-            <p className="text-xs mt-1" style={{ color: "#9C8870" }}>
-              No sales recorded yet — your mission data will populate this.
-            </p>
-          )}
-        </div>
-
-        {/* Demand bar vs network */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-          <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#6B5B45" }}>
-            Your zone vs Mumbai average
-          </p>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between text-[10px] mb-1" style={{ color: "#9C8870" }}>
-                <span>{saturation.area}</span>
-                <span>{saturation.demand} units</span>
-              </div>
-              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "#F0E6D8" }}>
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.round((saturation.demand / maxDemand) * 100)}%`,
-                    background: "linear-gradient(90deg, #FF6900, #FFB800)",
-                  }}
-                />
+        {/* ── Zone status card — big and clear ── */}
+        <div className="rounded-3xl overflow-hidden" style={{ background: cfg.gradient }}>
+          {/* Top: status + area */}
+          <div style={{ padding: "24px 24px 20px" }}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background: cfg.badgeBg, color: cfg.badgeText }}>
+                {cfg.emoji} {cfg.label}
+              </span>
+              <div className="text-right">
+                <p className="font-black text-white" style={{ fontSize: 32, lineHeight: 1 }}>
+                  {saturation.saturationScore}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>/ 100 score</p>
               </div>
             </div>
-            <div>
-              <div className="flex justify-between text-[10px] mb-1" style={{ color: "#9C8870" }}>
-                <span>Network avg</span>
-                <span>{Math.round(allAreas.reduce((s, a) => s + a.demand, 0) / allAreas.length)} units</span>
-              </div>
-              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "#F0E6D8" }}>
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.round((allAreas.reduce((s, a) => s + a.demand, 0) / allAreas.length / maxDemand) * 100)}%`,
-                    background: "#F0E6D8",
-                    outline: "1.5px solid #9C8870",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* White space nearby / First Win CTA */}
-        {demoSeller === "arjun" ? (
-          <div className="rounded-2xl p-4" style={{ background: "#FFF3E6", border: "2px solid #FF6900" }}>
-            <p className="text-xs font-black uppercase tracking-wide mb-2" style={{ color: "#FF6900" }}>
-              🎯 Opportunity Detected
-            </p>
-            <p className="text-sm font-bold" style={{ color: "#1A1200" }}>
-              Gym channel in Andheri West — ZERO active sellers
-            </p>
-            <p className="text-xs mt-1 mb-3" style={{ color: "#6B5B45" }}>
-              Sellers 2km away in Bandra move 18+ Flamin' Fun Puffs per morning at gyms. That demand is unserved here.
-            </p>
-            <Link
-              href="/mentor"
-              className="block w-full py-3 rounded-xl font-bold text-white text-sm text-center active:scale-95 transition-transform"
-              style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
-            >
-              Get your First Win plan →
-            </Link>
+            <h2 className="text-white font-black" style={{ fontSize: 24, letterSpacing: "-0.01em", marginBottom: 8 }}>
+              {saturation.area}
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, lineHeight: 1.5 }}>{cfg.desc}</p>
           </div>
-        ) : whiteSpaceNearby.length > 0 ? (
-          <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: "1px solid #F0E6D8" }}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#6B5B45" }}>
-              White Space Nearby
-            </p>
-            <div className="space-y-2">
-              {whiteSpaceNearby.map((area) => (
-                <div key={area} className="flex items-center gap-2 py-1.5 px-3 rounded-xl" style={{ background: "#FFF3E6" }}>
-                  <span className="text-xs font-bold" style={{ color: "#FF6900" }}>🟡</span>
-                  <p className="text-sm font-medium" style={{ color: "#1A1200" }}>{area}</p>
-                  <span className="text-[10px] ml-auto" style={{ color: "#9C8870" }}>Room to grow</span>
+
+          {/* Bottom: 3 stats inline */}
+          <div style={{ background: "rgba(0,0,0,0.15)", padding: "16px 24px" }}>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { Icon: TrendingUp, label: "Demand",      value: `${saturation.demand}` },
+                { Icon: Users,      label: "Sellers",     value: `${saturation.sellerCount}` },
+                { Icon: Zap,        label: "Top Channel", value: saturation.topChannel },
+              ].map(({ Icon, label, value }) => (
+                <div key={label} className="text-center">
+                  <Icon size={14} style={{ color: "rgba(255,255,255,0.5)" }} className="mx-auto mb-1" />
+                  <p className="text-white font-black text-base">{value}</p>
+                  <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</p>
                 </div>
               ))}
             </div>
-            <p className="text-xs mt-3" style={{ color: "#9C8870" }}>
-              HQ can recruit new partners in these zones. Zero risk to your turf.
-            </p>
+          </div>
+        </div>
+
+        {/* ── Opportunity / Action card ── */}
+        {demoSeller === "arjun" ? (
+          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1.5px solid #F0E6D8" }}>
+            <div style={{ background: "#FFF3E6", padding: "16px 20px 12px" }}>
+              <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: "#FF6900" }}>
+                🎯 Opportunity Detected
+              </p>
+              <p className="font-black text-lg leading-tight" style={{ color: "#1A1200" }}>
+                Gym channel in Andheri West — zero active sellers
+              </p>
+            </div>
+            <div style={{ padding: "16px 20px 20px" }}>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: "#6B5B45" }}>
+                Sellers 2km away in Bandra move 18+ Flamin&apos; Fun Puffs per morning at gyms. That demand is completely unserved in Andheri right now — you&apos;re first in.
+              </p>
+              <Link
+                href="/mentor"
+                className="block w-full py-3.5 rounded-xl font-bold text-white text-sm text-center active:scale-95 transition-transform"
+                style={{ background: "linear-gradient(135deg, #FF6900, #FFB800)" }}
+              >
+                Get your First Win plan →
+              </Link>
+            </div>
+          </div>
+        ) : whiteSpaceNearby.length > 0 ? (
+          <div className="rounded-2xl" style={{ background: "white", border: "1px solid #F0E6D8" }}>
+            <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid #F0E6D8" }}>
+              <p className="text-xs font-black uppercase tracking-widest" style={{ color: "#6B5B45" }}>
+                Nearby White Space
+              </p>
+            </div>
+            <div style={{ padding: "12px 20px 20px" }}>
+              {whiteSpaceNearby.map((area) => (
+                <div key={area} className="flex items-center gap-3 py-2.5"
+                  style={{ borderBottom: "1px solid #F0E6D8" }}>
+                  <span className="text-base">🟡</span>
+                  <p className="text-sm font-semibold flex-1" style={{ color: "#1A1200" }}>{area}</p>
+                  <p className="text-xs" style={{ color: "#9C8870" }}>Room to grow</p>
+                </div>
+              ))}
+              <p className="text-xs mt-3" style={{ color: "#9C8870" }}>
+                HQ recruits for these zones separately — your turf stays protected.
+              </p>
+            </div>
           </div>
         ) : null}
 
-        {/* Why this matters */}
-        <div className="rounded-2xl p-4" style={{ background: "white", border: "1px solid #F0E6D8" }}>
-          <p className="text-xs font-bold mb-1" style={{ color: "#6B5B45" }}>💡 Why territory intelligence matters</p>
-          <p className="text-xs leading-relaxed" style={{ color: "#9C8870" }}>
-            MadSquad tracks demand per zone before placing any new seller. That means you always get an uncrowded
-            patch with real room to grow — and your customers stay yours.
-          </p>
+        {/* ── Protection promise ── */}
+        <div className="rounded-2xl flex items-start gap-3" style={{ background: "#FFF3E6", border: "1.5px solid #FFB800", padding: "16px 20px" }}>
+          <Shield size={18} style={{ color: "#FF6900", flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <p className="font-bold text-sm" style={{ color: "#1A1200" }}>Your zone is locked for you</p>
+            <p className="text-xs mt-1 leading-relaxed" style={{ color: "#6B5B45" }}>
+              MadSquad maps demand before placing sellers. No one else gets placed in {saturation.area} while you&apos;re active here.
+            </p>
+          </div>
         </div>
+
+        <div style={{ height: 8 }} />
       </div>
     </div>
   );
